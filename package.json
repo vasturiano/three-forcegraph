@@ -1,0 +1,62 @@
+{
+  "name": "three-forcegraph",
+  "version": "1.0.0",
+  "description": "Force-directed graph as a ThreeJS 3d object",
+  "unpkg": "dist/three-forcegraph.min.js",
+  "main": "dist/three-forcegraph.common.js",
+  "module": "dist/three-forcegraph.module.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vasturiano/three-forcegraph.git"
+  },
+  "homepage": "https://github.com/vasturiano/three-forcegraph",
+  "keywords": [
+    "3d",
+    "force",
+    "simulation",
+    "graph",
+    "three",
+    "d3",
+    "ngraph",
+    "webgl"
+  ],
+  "author": {
+    "name": "Vasco Asturiano",
+    "url": "http://bl.ocks.org/vasturiano"
+  },
+  "bugs": {
+    "url": "https://github.com/vasturiano/three-forcegraph/issues"
+  },
+  "scripts": {
+    "build": "rm -rf dist && mkdir dist && rollup -c",
+    "watch": "rollup -c -w",
+    "minify": "uglifyjs dist/three-forcegraph.js -o dist/three-forcegraph.min.js -c -m --comments '/Version/'",
+    "build-module": "rollup -c rollup.config.module.js",
+    "prepublish": "npm run build && npm run minify && npm run build-module"
+  },
+  "dependencies": {
+    "accessor-fn": "^1.2.2",
+    "d3-force-3d": "^1.0.7",
+    "d3-scale-chromatic": "^1.1.1",
+    "kapsule": "^1.7.8",
+    "ngraph.forcelayout": "^0.2.1",
+    "ngraph.forcelayout3d": "^0.0.16",
+    "ngraph.graph": "^0.0.14",
+    "qwest": "^4.5.0",
+    "three": "^0.89.0",
+    "tinycolor2": "^1.4.1"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "rollup": "^0.53.0",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-watch": "^4.3.1",
+    "uglify-js": "^3.3.3"
+  }
+}
