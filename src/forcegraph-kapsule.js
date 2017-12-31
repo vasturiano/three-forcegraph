@@ -54,16 +54,16 @@ export default Kapsule({
             }
         },
         nodeRelSize: { default: 4 }, // volume per val unit
-        nodeResolution: { default: 8 }, // how many slice segments in the sphere's circumference
-        lineOpacity: { default: 0.2 },
         autoColorBy: {},
-        idField: { default: 'id' },
-        valField: { default: 'val' },
-        colorField: { default: 'color' },
+        nodeId: { default: 'id' },
+        nodeVal: { default: 'val' },
+        nodeResolution: { default: 8 }, // how many slice segments in the sphere's circumference
+        nodeColor: { default: 'color' },
         nodeThreeObject: {},
-        linkSourceField: { default: 'source' },
-        linkTargetField: { default: 'target' },
-        linkColorField: { default: 'color' },
+        linkSource: { default: 'source' },
+        linkTarget: { default: 'target' },
+        linkColor: { default: 'color' },
+        linkOpacity: { default: 0.2 },
         forceEngine: { default: 'd3' }, // d3 or ngraph
         d3AlphaDecay: { default: 0.0228 },
         d3VelocityDecay: { default: 0.4 },
@@ -121,21 +121,21 @@ export default Kapsule({
 
         if (state.autoColorBy !== null) {
             // Auto add color to uncolored nodes
-            autoColorNodes(state.graphData.nodes, accessorFn(state.autoColorBy), state.colorField);
+            autoColorNodes(state.graphData.nodes, accessorFn(state.autoColorBy), state.nodeColor);
         }
 
         // parse links
         state.graphData.links.forEach(link => {
-            link.source = link[state.linkSourceField];
-            link.target = link[state.linkTargetField];
+            link.source = link[state.linkSource];
+            link.target = link[state.linkTarget];
         });
 
         // Add WebGL objects
         while (state.graphScene.children.length) { state.graphScene.remove(state.graphScene.children[0]) } // Clear the place
 
         const customNodeObjectAccessor = accessorFn(state.nodeThreeObject);
-        const valAccessor = accessorFn(state.valField);
-        const colorAccessor = accessorFn(state.colorField);
+        const valAccessor = accessorFn(state.nodeVal);
+        const colorAccessor = accessorFn(state.nodeColor);
         const sphereGeometries = {}; // indexed by node value
         const sphereMaterials = {}; // indexed by color
         state.graphData.nodes.forEach(node => {
@@ -168,7 +168,7 @@ export default Kapsule({
             state.graphScene.add(node.__threeObj = obj);
         });
 
-        const linkColorAccessor = accessorFn(state.linkColorField);
+        const linkColorAccessor = accessorFn(state.linkColor);
         const lineMaterials = {}; // indexed by color
         state.graphData.links.forEach(link => {
             const color = linkColorAccessor(link);
@@ -176,7 +176,7 @@ export default Kapsule({
                 lineMaterials[color] = new LineBasicMaterial({
                     color: colorStr2Hex(color || '#f0f0f0'),
                     transparent: true,
-                    opacity: state.lineOpacity
+                    opacity: state.linkOpacity
                 });
             }
 
@@ -205,12 +205,12 @@ export default Kapsule({
                 .numDimensions(state.numDimensions)
                 .nodes(state.graphData.nodes)
                 .force('link')
-                    .id(d => d[state.idField])
+                    .id(d => d[state.nodeId])
                     .links(state.graphData.links);
         } else {
             // ngraph
             const graph = ngraph.graph();
-            state.graphData.nodes.forEach(node => { graph.addNode(node[state.idField]); });
+            state.graphData.nodes.forEach(node => { graph.addNode(node[state.nodeId]); });
             state.graphData.links.forEach(link => { graph.addLink(link.source, link.target); });
             layout = ngraph['forcelayout' + (state.numDimensions === 2 ? '' : '3d')](graph);
             layout.graph = graph; // Attach graph reference to layout
@@ -236,7 +236,7 @@ export default Kapsule({
                 const obj = node.__threeObj;
                 if (!obj) return;
 
-                const pos = isD3Sim ? node : layout.getNodePosition(node[state.idField]);
+                const pos = isD3Sim ? node : layout.getNodePosition(node[state.nodeId]);
 
                 obj.position.x = pos.x;
                 obj.position.y = pos.y || 0;
