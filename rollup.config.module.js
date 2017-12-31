@@ -1,5 +1,5 @@
 import babel from 'rollup-plugin-babel';
-import { name, dependencies } from './package.json';
+import { name, dependencies, peerDependencies } from './package.json';
 
 export default {
     input: 'src/index.js',
@@ -13,7 +13,7 @@ export default {
             file: `dist/${name}.module.js`
         }
     ],
-    external: Object.keys(dependencies),
+    external: [...Object.keys(dependencies), ...Object.keys(peerDependencies)],
     plugins: [
         babel()
     ]
