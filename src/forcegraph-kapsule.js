@@ -75,9 +75,6 @@ export default Kapsule({
     methods: {
         // Expose d3 forces for external manipulation
         d3Force: function(state, forceName, forceFn) {
-            if (!state.initialised) {
-                return null; // d3 force simulation object doesn't exist yet
-            }
             if (forceFn === undefined) {
                 return state.d3ForceLayout.force(forceName); // Force getter
             }
@@ -90,16 +87,17 @@ export default Kapsule({
         }
     },
 
-    init: function(threeObj, state) {
-        // Main three object to manipulate
-        state.graphScene = threeObj;
-
-        // Add D3 force-directed layout
-        state.d3ForceLayout = d3ForceSimulation()
+    stateInit: () => ({
+        d3ForceLayout: d3ForceSimulation()
             .force('link', d3ForceLink())
             .force('charge', d3ForceManyBody())
             .force('center', d3ForceCenter())
-            .stop();
+            .stop()
+    }),
+
+    init: function(threeObj, state) {
+        // Main three object to manipulate
+        state.graphScene = threeObj;
     },
 
     update: function updateFn(state) {
