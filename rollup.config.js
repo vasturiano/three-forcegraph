@@ -10,13 +10,13 @@ export default {
             format: 'umd',
             name: 'ThreeForceGraph',
             file: `dist/${name}.js`,
-            sourcemap: true
+            sourcemap: true,
+            banner: `// Version ${version} ${name} - ${homepage}`
         }
     ],
     plugins: [
         resolve(),
         commonJs(),
         babel({ exclude: 'node_modules/**' })
-    ],
-    banner: `// Version ${version} ${name} - ${homepage}`
+    ]
 };
