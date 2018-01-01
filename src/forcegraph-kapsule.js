@@ -70,6 +70,8 @@ export default Kapsule({
     warmupTicks: { default: 0 }, // how many times to tick the force engine at init before starting to render
     cooldownTicks: { default: Infinity },
     cooldownTime: { default: 15000 }, // ms
+    onLoading: { default: () => {}, triggerUpdate: false },
+    onFinishLoading: { default: () => {}, triggerUpdate: false }
   },
 
   methods: {
@@ -102,6 +104,7 @@ export default Kapsule({
 
   update: function updateFn(state) {
     state.onFrame = null; // Pause simulation
+    state.onLoading();
 
     if (state.graphData.nodes.length || state.graphData.links.length) {
       console.info('force-graph loading', state.graphData.nodes.length + ' nodes', state.graphData.links.length + ' links');
@@ -219,6 +222,7 @@ export default Kapsule({
     let cntTicks = 0;
     const startTickTime = new Date();
     state.onFrame = layoutTick;
+    state.onFinishLoading();
 
     //
 
