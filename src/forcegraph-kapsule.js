@@ -97,12 +97,12 @@ export default Kapsule({
       .stop()
   }),
 
-  init: function(threeObj, state) {
+  init(threeObj, state) {
     // Main three object to manipulate
     state.graphScene = threeObj;
   },
 
-  update: function updateFn(state) {
+  update(state) {
     state.onFrame = null; // Pause simulation
     state.onLoading();
 
@@ -116,7 +116,7 @@ export default Kapsule({
       qwest.get(state.jsonUrl).then((_, json) => {
         state.fetchingJson = false;
         state.graphData = json;
-        updateFn(state);  // Force re-update
+        state._rerender();  // Force re-update
       });
     }
 
