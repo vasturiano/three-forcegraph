@@ -189,6 +189,7 @@ export default Kapsule({
       line.renderOrder = 10; // Prevent visual glitches of dark lines on top of nodes by rendering them last
 
       line.__graphObjType = 'link'; // Add object type
+      line.__data = link; // Attach link data
 
       state.graphScene.add(link.__lineObj = line);
     });
