@@ -54,6 +54,9 @@ myGraph.tickFrame();
 | <b>linkTarget</b>([<i>str</i>]) | Link object accessor attribute referring to id of target node. | `target` |
 | <b>linkColor</b>([<i>str</i> or <i>fn</i>]) | Link object accessor function or attribute for line color. | `color` |
 | <b>linkOpacity</b>([<i>num</i>]) | Getter/setter for line opacity of links, between [0,1]. | 0.2 |
+| <b>linkVal</b>([<i>num</i>, <i>str</i> or <i>fn</i>]) | Link object accessor function, attribute or a numeric constant for the link numeric value (affects cylinder radius). Is rounded to the nearest integer. | `val` |
+| <b>linkDefaultWidth</b>([<i>num</i>]) | Default radius of the cylinder linking two nodes. Is multiplied by `linkVal`. | 1.0 |
+| <b>linkResolution</b>([<i>num</i>]) | Getter/setter for the geometric resolution of each link, expressed in how many radial segments to divide the cylinder. Higher values yield smoother cylinders. | 6 |
 | <b>forceEngine</b>([<i>str</i>]) | Getter/setter for which force-simulation engine to use ([*d3*](https://github.com/vasturiano/d3-force-3d) or [*ngraph*](https://github.com/anvaka/ngraph.forcelayout)). | `d3` |
 | <b>d3AlphaDecay</b>([<i>num</i>]) | Getter/setter for the [simulation intensity decay](https://github.com/vasturiano/d3-force-3d#simulation_alphaDecay) parameter, only applicable if using the d3 simulation engine. | `0.0228` |
 | <b>d3VelocityDecay</b>([<i>num</i>]) | Getter/setter for the nodes' [velocity decay](https://github.com/vasturiano/d3-force-3d#simulation_velocityDecay) that simulates the medium resistance, only applicable if using the d3 simulation engine. | `0.4` |
@@ -70,16 +73,16 @@ myGraph.tickFrame();
 
 ```
 {
-    "nodes": [ 
-        { 
+    "nodes": [
+        {
           "id": "id1",
           "name": "name1",
-          "val": 1 
+          "val": 1
         },
-        { 
+        {
           "id": "id2",
           "name": "name2",
-          "val": 10 
+          "val": 10
         },
         (...)
     ],

@@ -1,11 +1,10 @@
 import {
   SphereGeometry,
+  CylinderGeometry,
   BufferGeometry,
   BufferAttribute,
   Mesh,
-  MeshLambertMaterial,
-  Line,
-  LineBasicMaterial
+  MeshLambertMaterial
 } from 'three';
 
 import {
@@ -64,6 +63,9 @@ export default Kapsule({
     linkTarget: { default: 'target' },
     linkColor: { default: 'color' },
     linkOpacity: { default: 0.2 },
+    linkVal: { default: 'val' }, // Rounded to nearest integer and multiplied by linkDefaultWidth
+    linkDefaultWidth: { default: 1 },
+    linkResolution: { default: 6 }, // how many radial segments in the cylinder geometry
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaDecay: { default: 0.0228 },
     d3VelocityDecay: { default: 0.4 },
@@ -170,21 +172,27 @@ export default Kapsule({
     });
 
     const linkColorAccessor = accessorFn(state.linkColor);
-    const lineMaterials = {}; // indexed by color
+    const linkValAccessor = accessorFn(state.linkVal);
+    const cylinderGeometries = {}; // indexed by val
+    const cylinderMaterials = {}; // indexed by color
     state.graphData.links.forEach(link => {
       const color = linkColorAccessor(link);
-      if (!lineMaterials.hasOwnProperty(color)) {
-        lineMaterials[color] = new LineBasicMaterial({
+      const val = linkValAccessor(link) || 1;
+      const d = val * state.linkDefaultWidth / 2;
+      if (!cylinderGeometries.hasOwnProperty(val)) {
+        cylinderGeometries[val] = new THREE.CylinderGeometry(d, d, 1, state.linkResolution);
+        cylinderGeometries[val].applyMatrix( new THREE.Matrix4().makeTranslation( 0, 1 / 2, 0 ) );
+        cylinderGeometries[val].applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+      }
+      if (!cylinderMaterials.hasOwnProperty(color)) {
+        cylinderMaterials[color] = new THREE.MeshLambertMaterial({
           color: colorStr2Hex(color || '#f0f0f0'),
           transparent: true,
           opacity: state.linkOpacity
         });
       }
 
-      const geometry = new BufferGeometry();
-      geometry.addAttribute('position', new BufferAttribute(new Float32Array(2 * 3), 3));
-      const lineMaterial = lineMaterials[color];
-      const line = new Line(geometry, lineMaterial);
+      const line = new THREE.Mesh( cylinderGeometries[val], cylinderMaterials[color] );
 
       line.renderOrder = 10; // Prevent visual glitches of dark lines on top of nodes by rendering them last
 
@@ -256,17 +264,15 @@ export default Kapsule({
             : layout.getLinkPosition(layout.graph.getLink(link.source, link.target).id),
           start = pos[isD3Sim ? 'source' : 'from'],
           end = pos[isD3Sim ? 'target' : 'to'],
-          linePos = line.geometry.attributes.position;
+          vstart = new THREE.Vector3(start.x,start.y || 0,start.z || 0),
+          vend = new THREE.Vector3(end.x,end.y || 0,end.z || 0),
+          distance = vstart.distanceTo(vend);
 
-        linePos.array[0] = start.x;
-        linePos.array[1] = start.y || 0;
-        linePos.array[2] = start.z || 0;
-        linePos.array[3] = end.x;
-        linePos.array[4] = end.y || 0;
-        linePos.array[5] = end.z || 0;
-
-        linePos.needsUpdate = true;
-        line.geometry.computeBoundingSphere();
+        line.position.x = vstart.x;
+        line.position.y = vstart.y;
+        line.position.z = vstart.z;
+        line.lookAt(vend);
+        line.scale.z = distance;
       });
     }
   }
