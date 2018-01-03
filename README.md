@@ -53,6 +53,7 @@ myGraph.tickFrame();
 | <b>linkSource</b>([<i>str</i>]) | Link object accessor attribute referring to id of source node. | `source` |
 | <b>linkTarget</b>([<i>str</i>]) | Link object accessor attribute referring to id of target node. | `target` |
 | <b>linkColor</b>([<i>str</i> or <i>fn</i>]) | Link object accessor function or attribute for line color. | `color` |
+| <b>linkAutoColorBy</b>([<i>str</i> or <i>fn</i>]) | Link object accessor function (`fn(link)`) or attribute (e.g. `'type'`) to automatically group colors by. Only affects links without a color attribute. | |
 | <b>linkOpacity</b>([<i>num</i>]) | Getter/setter for line opacity of links, between [0,1]. | 0.2 |
 | <b>forceEngine</b>([<i>str</i>]) | Getter/setter for which force-simulation engine to use ([*d3*](https://github.com/vasturiano/d3-force-3d) or [*ngraph*](https://github.com/anvaka/ngraph.forcelayout)). | `d3` |
 | <b>d3AlphaDecay</b>([<i>num</i>]) | Getter/setter for the [simulation intensity decay](https://github.com/vasturiano/d3-force-3d#simulation_alphaDecay) parameter, only applicable if using the d3 simulation engine. | `0.0228` |
@@ -70,16 +71,16 @@ myGraph.tickFrame();
 
 ```
 {
-    "nodes": [ 
-        { 
+    "nodes": [
+        {
           "id": "id1",
           "name": "name1",
-          "val": 1 
+          "val": 1
         },
-        { 
+        {
           "id": "id2",
           "name": "name2",
-          "val": 10 
+          "val": 10
         },
         (...)
     ],
