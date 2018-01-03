@@ -3,20 +3,22 @@ import tinyColor from 'tinycolor2';
 
 const colorStr2Hex = str => isNaN(str) ? parseInt(tinyColor(str).toHex(), 16) : str;
 
-function autoColorNodes(nodes, colorByAccessor, colorField) {
+// Objects can be nodes or links ; autoset attribute colorField by colorByAccessor property
+// If an object has already a color, don't set it.
+function autoColorObjects(objects, colorByAccessor, colorField) {
   if (!colorByAccessor || typeof colorField !== 'string') return;
 
   const colors = schemePaired; // Paired color set from color brewer
 
-  const uncoloredNodes = nodes.filter(node => !node[colorField]);
-  const nodeGroups = {};
+  const uncoloredObjects = objects.filter(obj => !obj[colorField]);
+  const objGroups = {};
 
-  uncoloredNodes.forEach(node => { nodeGroups[colorByAccessor(node)] = null });
-  Object.keys(nodeGroups).forEach((group, idx) => { nodeGroups[group] = idx });
+  uncoloredObjects.forEach(obj => { objGroups[colorByAccessor(obj)] = null });
+  Object.keys(objGroups).forEach((group, idx) => { objGroups[group] = idx });
 
-  uncoloredNodes.forEach(node => {
-    node[colorField] = colors[nodeGroups[colorByAccessor(node)] % colors.length];
+  uncoloredObjects.forEach(obj => {
+    obj[colorField] = colors[objGroups[colorByAccessor(obj)] % colors.length];
   });
 }
 
-export { autoColorNodes, colorStr2Hex };
+export { autoColorObjects, colorStr2Hex };
