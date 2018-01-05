@@ -36,7 +36,7 @@ import Kapsule from 'kapsule';
 import qwest from 'qwest';
 import accessorFn from 'accessor-fn';
 
-import { autoColorNodes, colorStr2Hex } from './color-utils';
+import { autoColorObjects, colorStr2Hex } from './color-utils';
 
 //
 
@@ -75,6 +75,7 @@ export default Kapsule({
     linkSource: { default: 'source' },
     linkTarget: { default: 'target' },
     linkColor: { default: 'color' },
+    linkAutoColorBy: {},
     linkOpacity: { default: 0.2 },
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaDecay: { default: 0.0228 },
@@ -134,7 +135,11 @@ export default Kapsule({
 
     if (state.autoColorBy !== null) {
       // Auto add color to uncolored nodes
-      autoColorNodes(state.graphData.nodes, accessorFn(state.autoColorBy), state.nodeColor);
+      autoColorObjects(state.graphData.nodes, accessorFn(state.autoColorBy), state.nodeColor);
+    }
+    if (state.linkAutoColorBy !== null) {
+      // Auto add color to uncolored links
+      autoColorObjects(state.graphData.links, accessorFn(state.linkAutoColorBy), state.linkColor);
     }
 
     // parse links
