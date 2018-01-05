@@ -3,8 +3,9 @@ import tinyColor from 'tinycolor2';
 
 const colorStr2Hex = str => isNaN(str) ? parseInt(tinyColor(str).toHex(), 16) : str;
 
-// Objects can be nodes or links ; autoset attribute colorField by colorByAccessor property
-// If an object has already a color, don't set it.
+// Autoset attribute colorField by colorByAccessor property
+// If an object has already a color, don't set it
+// Objects can be nodes or links
 function autoColorObjects(objects, colorByAccessor, colorField) {
   if (!colorByAccessor || typeof colorField !== 'string') return;
 

@@ -66,11 +66,11 @@ export default Kapsule({
       }
     },
     nodeRelSize: { default: 4 }, // volume per val unit
-    autoColorBy: {},
     nodeId: { default: 'id' },
     nodeVal: { default: 'val' },
     nodeResolution: { default: 8 }, // how many slice segments in the sphere's circumference
     nodeColor: { default: 'color' },
+    nodeAutoColorBy: {},
     nodeThreeObject: {},
     linkSource: { default: 'source' },
     linkTarget: { default: 'target' },
@@ -85,6 +85,10 @@ export default Kapsule({
     cooldownTime: { default: 15000 }, // ms
     onLoading: { default: () => {}, triggerUpdate: false },
     onFinishLoading: { default: () => {}, triggerUpdate: false }
+  },
+
+  aliases: {
+    autoColorBy: 'nodeAutoColorBy'
   },
 
   methods: {
@@ -133,9 +137,9 @@ export default Kapsule({
       });
     }
 
-    if (state.autoColorBy !== null) {
+    if (state.nodeAutoColorBy !== null) {
       // Auto add color to uncolored nodes
-      autoColorObjects(state.graphData.nodes, accessorFn(state.autoColorBy), state.nodeColor);
+      autoColorObjects(state.graphData.nodes, accessorFn(state.nodeAutoColorBy), state.nodeColor);
     }
     if (state.linkAutoColorBy !== null) {
       // Auto add color to uncolored links
