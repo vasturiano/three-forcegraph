@@ -41,7 +41,7 @@ import Kapsule from 'kapsule';
 import qwest from 'qwest';
 import accessorFn from 'accessor-fn';
 
-import { autoColorNodes, colorStr2Hex } from './color-utils';
+import { autoColorObjects, colorStr2Hex } from './color-utils';
 
 //
 
@@ -71,15 +71,16 @@ export default Kapsule({
       }
     },
     nodeRelSize: { default: 4 }, // volume per val unit
-    autoColorBy: {},
     nodeId: { default: 'id' },
     nodeVal: { default: 'val' },
     nodeResolution: { default: 8 }, // how many slice segments in the sphere's circumference
     nodeColor: { default: 'color' },
+    nodeAutoColorBy: {},
     nodeThreeObject: {},
     linkSource: { default: 'source' },
     linkTarget: { default: 'target' },
     linkColor: { default: 'color' },
+    linkAutoColorBy: {},
     linkOpacity: { default: 0.2 },
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaDecay: { default: 0.0228 },
@@ -89,6 +90,10 @@ export default Kapsule({
     cooldownTime: { default: 15000 }, // ms
     onLoading: { default: () => {}, triggerUpdate: false },
     onFinishLoading: { default: () => {}, triggerUpdate: false }
+  },
+
+  aliases: {
+    autoColorBy: 'nodeAutoColorBy'
   },
 
   methods: {
@@ -137,9 +142,13 @@ export default Kapsule({
       });
     }
 
-    if (state.autoColorBy !== null) {
+    if (state.nodeAutoColorBy !== null) {
       // Auto add color to uncolored nodes
-      autoColorNodes(state.graphData.nodes, accessorFn(state.autoColorBy), state.nodeColor);
+      autoColorObjects(state.graphData.nodes, accessorFn(state.nodeAutoColorBy), state.nodeColor);
+    }
+    if (state.linkAutoColorBy !== null) {
+      // Auto add color to uncolored links
+      autoColorObjects(state.graphData.links, accessorFn(state.linkAutoColorBy), state.linkColor);
     }
 
     // parse links
