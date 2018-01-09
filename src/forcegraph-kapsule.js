@@ -203,7 +203,7 @@ export default Kapsule({
     const lineMaterials = {}; // indexed by color
     state.graphData.links.forEach(link => {
       const color = linkColorAccessor(link);
-      const val = Math.round(linkValAccessor(link));
+      const val = Math.round(linkValAccessor(link)  || 1);
       const lineMatName = color + "-" + val
       if (!lineMaterials.hasOwnProperty(lineMatName)) {
         lineMaterials[lineMatName] = new MeshLineMaterial({
