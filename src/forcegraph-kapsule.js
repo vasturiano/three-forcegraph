@@ -202,7 +202,7 @@ export default Kapsule({
       const val = linkValAccessor(link) || 1;
       const d = val * state.linkDefaultWidth / 2;
       if (!cylinderGeometries.hasOwnProperty(val)) {
-        cylinderGeometries[val] = new THREE.CylinderGeometry(d, d, 1, state.linkResolution);
+        cylinderGeometries[val] = new THREE.CylinderGeometry(d, d, 1, state.linkResolution, 1, false);
         cylinderGeometries[val].applyMatrix( new THREE.Matrix4().makeTranslation( 0, 1 / 2, 0 ) );
         cylinderGeometries[val].applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
       }
