@@ -7,6 +7,18 @@ import {
   MeshLambertMaterial
 } from 'three';
 
+const three = window.THREE
+  ? window.THREE // Prefer consumption from global THREE, if exists
+  : {
+    SphereGeometry,
+    BufferGeometry,
+    BufferAttribute,
+    Mesh,
+    MeshLambertMaterial,
+    Line,
+    LineBasicMaterial
+  };
+
 import {
   forceSimulation as d3ForceSimulation,
   forceLink as d3ForceLink,
@@ -23,7 +35,7 @@ import Kapsule from 'kapsule';
 import qwest from 'qwest';
 import accessorFn from 'accessor-fn';
 
-import { autoColorNodes, colorStr2Hex } from './color-utils';
+import { autoColorObjects, colorStr2Hex } from './color-utils';
 
 //
 
@@ -53,15 +65,17 @@ export default Kapsule({
       }
     },
     nodeRelSize: { default: 4 }, // volume per val unit
-    autoColorBy: {},
     nodeId: { default: 'id' },
     nodeVal: { default: 'val' },
     nodeResolution: { default: 8 }, // how many slice segments in the sphere's circumference
     nodeColor: { default: 'color' },
+    nodeAutoColorBy: {},
+    nodeOpacity: { default: 0.75 },
     nodeThreeObject: {},
     linkSource: { default: 'source' },
     linkTarget: { default: 'target' },
     linkColor: { default: 'color' },
+    linkAutoColorBy: {},
     linkOpacity: { default: 0.2 },
     linkVal: { default: 'val' }, // Rounded to nearest integer and multiplied by linkDefaultWidth
     linkDefaultWidth: { default: 1 },
@@ -74,6 +88,10 @@ export default Kapsule({
     cooldownTime: { default: 15000 }, // ms
     onLoading: { default: () => {}, triggerUpdate: false },
     onFinishLoading: { default: () => {}, triggerUpdate: false }
+  },
+
+  aliases: {
+    autoColorBy: 'nodeAutoColorBy'
   },
 
   methods: {
@@ -122,9 +140,13 @@ export default Kapsule({
       });
     }
 
-    if (state.autoColorBy !== null) {
+    if (state.nodeAutoColorBy !== null) {
       // Auto add color to uncolored nodes
-      autoColorNodes(state.graphData.nodes, accessorFn(state.autoColorBy), state.nodeColor);
+      autoColorObjects(state.graphData.nodes, accessorFn(state.nodeAutoColorBy), state.nodeColor);
+    }
+    if (state.linkAutoColorBy !== null) {
+      // Auto add color to uncolored links
+      autoColorObjects(state.graphData.links, accessorFn(state.linkAutoColorBy), state.linkColor);
     }
 
     // parse links
@@ -150,19 +172,19 @@ export default Kapsule({
       } else { // Default object (sphere mesh)
         const val = valAccessor(node) || 1;
         if (!sphereGeometries.hasOwnProperty(val)) {
-          sphereGeometries[val] = new SphereGeometry(Math.cbrt(val) * state.nodeRelSize, state.nodeResolution, state.nodeResolution);
+          sphereGeometries[val] = new three.SphereGeometry(Math.cbrt(val) * state.nodeRelSize, state.nodeResolution, state.nodeResolution);
         }
 
         const color = colorAccessor(node);
         if (!sphereMaterials.hasOwnProperty(color)) {
-          sphereMaterials[color] = new MeshLambertMaterial({
+          sphereMaterials[color] = new three.MeshLambertMaterial({
             color: colorStr2Hex(color || '#ffffaa'),
             transparent: true,
-            opacity: 0.75
+            opacity: state.nodeOpacity
           });
         }
 
-        obj = new Mesh(sphereGeometries[val], sphereMaterials[color]);
+        obj = new three.Mesh(sphereGeometries[val], sphereMaterials[color]);
       }
 
       obj.__graphObjType = 'node'; // Add object type
