@@ -76,6 +76,7 @@ export default Kapsule({
     nodeResolution: { default: 8 }, // how many slice segments in the sphere's circumference
     nodeColor: { default: 'color' },
     nodeAutoColorBy: {},
+    nodeOpacity: { default: 0.75 },
     nodeThreeObject: {},
     linkSource: { default: 'source' },
     linkTarget: { default: 'target' },
@@ -182,7 +183,7 @@ export default Kapsule({
           sphereMaterials[color] = new three.MeshLambertMaterial({
             color: colorStr2Hex(color || '#ffffaa'),
             transparent: true,
-            opacity: 0.75
+            opacity: state.nodeOpacity
           });
         }
 
