@@ -83,6 +83,8 @@ export default Kapsule({
     linkColor: { default: 'color' },
     linkAutoColorBy: {},
     linkOpacity: { default: 0.2 },
+    linkVal: { default: 'val' }, // Rounded to nearest integer and multiplied by linkDefaultWidth
+    linkDefaultWidth: { default: 1.0 },
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaDecay: { default: 0.0228 },
     d3VelocityDecay: { default: 0.4 },
@@ -197,12 +199,16 @@ export default Kapsule({
     });
 
     const linkColorAccessor = accessorFn(state.linkColor);
+    const linkValAccessor = accessorFn(state.linkVal);
     const lineMaterials = {}; // indexed by color
     state.graphData.links.forEach(link => {
       const color = linkColorAccessor(link);
-      if (!lineMaterials.hasOwnProperty(color)) {
-        lineMaterials[color] = new MeshLineMaterial({
+      const val = Math.round(linkValAccessor(link));
+      const lineMatName = color + "-" + val
+      if (!lineMaterials.hasOwnProperty(lineMatName)) {
+        lineMaterials[lineMatName] = new MeshLineMaterial({
           color: new three.Color(colorStr2Hex(color || '#f0f0f0')),
+          lineWidth: state.linkDefaultWidth * val,
           transparent: true,
           opacity: state.linkOpacity
         });
@@ -214,7 +220,7 @@ export default Kapsule({
     	}
     	const g = new MeshLine();
       g.setGeometry(geo);
-      const lineMaterial = lineMaterials[color];
+      const lineMaterial = lineMaterials[lineMatName];
 
       const line = new three.Mesh( g.geometry, lineMaterial );
       line.geo = geo;

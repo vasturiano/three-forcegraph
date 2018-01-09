@@ -1,0 +1,73 @@
+<head>
+  <style> body { margin: 0; } </style>
+  <meta charset="UTF-8">
+  <title>Stress Test three-forcegraph</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/89/three.min.js"></script>
+  <script src="http://unpkg.com/three-trackballcontrols-web/dist/three-trackballcontrols.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qwest/4.5.0/qwest.min.js"></script>
+  <!--script src="//unpkg.com/three-forcegraph"></script-->
+  <script src="../../dist/three-forcegraph.js"></script>
+</head>
+
+<body>
+  <div id="3d-graph"></div>
+
+  <script>
+    const Graph = new ThreeForceGraph()
+  		.warmupTicks(200)
+  		.cooldownTicks(0) // Don't animate-in, jump to final state
+  		.linkOpacity(0.08)
+  		.forceEngine('ngraph')
+
+  	qwest.get('mplate.mtx').then((_, mtxData) => {
+      console.log(mtxData);
+  		let nodeSet = new Set();
+
+  		const pairs = mtxData.split('\n')
+  			.slice(14, -1)
+  			.map(d => d.split(' '));
+
+  		pairs.forEach(d => {
+  			nodeSet.add(d[0]);
+  			nodeSet.add(d[1]);
+  		});
+
+  		const nodes = Array.from(nodeSet).map(d => ({ id: d })),
+  			links = pairs.filter(d => d[0] !== d[1])
+  				.map(d => ({ source: d[0], target: d[1] }));
+
+  		Graph.graphData({ nodes, links });
+  	});
+
+    // Setup renderer
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('3d-graph').appendChild(renderer.domElement);
+
+    // Setup scene
+    const scene = new THREE.Scene();
+    scene.add(Graph);
+    scene.add(new THREE.AmbientLight(0xbbbbbb));
+
+    // Setup camera
+    const camera = new THREE.PerspectiveCamera();
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    camera.lookAt(Graph.position);
+    camera.position.z = 1;
+
+    // Add camera controls
+    const tbControls = new TrackballControls(camera, renderer.domElement);
+
+    // Kick-off renderer
+    (function animate() { // IIFE
+      Graph.tickFrame();
+
+      // Frame cycle
+      tbControls.update();
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    })();
+  </script>
+</body>
