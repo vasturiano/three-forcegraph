@@ -21,6 +21,11 @@ const three = window.THREE
   };
 
 import {
+  MeshLine,
+  MeshLineMaterial
+} from 'three.meshline';
+
+import {
   forceSimulation as d3ForceSimulation,
   forceLink as d3ForceLink,
   forceManyBody as d3ForceManyBody,
@@ -78,6 +83,8 @@ export default Kapsule({
     linkColor: { default: 'color' },
     linkAutoColorBy: {},
     linkOpacity: { default: 0.2 },
+    linkVal: { default: 'val' }, // Rounded to nearest integer and multiplied by linkDefaultWidth
+    linkDefaultWidth: { default: 1.0 },
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaDecay: { default: 0.0228 },
     d3VelocityDecay: { default: 0.4 },
@@ -192,21 +199,32 @@ export default Kapsule({
     });
 
     const linkColorAccessor = accessorFn(state.linkColor);
+    const linkValAccessor = accessorFn(state.linkVal);
     const lineMaterials = {}; // indexed by color
     state.graphData.links.forEach(link => {
       const color = linkColorAccessor(link);
-      if (!lineMaterials.hasOwnProperty(color)) {
-        lineMaterials[color] = new three.LineBasicMaterial({
-          color: colorStr2Hex(color || '#f0f0f0'),
+      const val = Math.round(linkValAccessor(link)  || 1);
+      const lineMatName = color + "-" + val
+      if (!lineMaterials.hasOwnProperty(lineMatName)) {
+        lineMaterials[lineMatName] = new MeshLineMaterial({
+          color: new three.Color(colorStr2Hex(color || '#f0f0f0')),
+          lineWidth: state.linkDefaultWidth * val,
           transparent: true,
           opacity: state.linkOpacity
         });
       }
 
-      const geometry = new three.BufferGeometry();
-      geometry.addAttribute('position', new three.BufferAttribute(new Float32Array(2 * 3), 3));
-      const lineMaterial = lineMaterials[color];
-      const line = new three.Line(geometry, lineMaterial);
+      const geo = new Float32Array( 2 * 3 );
+    	for( var j = 0; j < geo.length; j += 3 ) {
+    		geo[ j ] = geo[ j + 1 ] = geo[ j + 2 ] = 0;
+    	}
+    	const g = new MeshLine();
+      g.setGeometry(geo);
+      const lineMaterial = lineMaterials[lineMatName];
+
+      const line = new three.Mesh( g.geometry, lineMaterial );
+      line.geo = geo;
+      line.g = g;
 
       line.renderOrder = 10; // Prevent visual glitches of dark lines on top of nodes by rendering them last
 
@@ -278,17 +296,16 @@ export default Kapsule({
             : layout.getLinkPosition(layout.graph.getLink(link.source, link.target).id),
           start = pos[isD3Sim ? 'source' : 'from'],
           end = pos[isD3Sim ? 'target' : 'to'],
-          linePos = line.geometry.attributes.position;
+          g = line.g,
+          geo = line.geo;
 
-        linePos.array[0] = start.x;
-        linePos.array[1] = start.y || 0;
-        linePos.array[2] = start.z || 0;
-        linePos.array[3] = end.x;
-        linePos.array[4] = end.y || 0;
-        linePos.array[5] = end.z || 0;
-
-        linePos.needsUpdate = true;
-        line.geometry.computeBoundingSphere();
+        geo[0] = start.x;
+        geo[1] = start.y || 0;
+        geo[2] = start.z || 0;
+        geo[3] = end.x;
+        geo[4] = end.y || 0;
+        geo[5] = end.z || 0;
+        g.setGeometry( geo );
       });
     }
   }
