@@ -71,7 +71,7 @@ export default Kapsule({
     nodeResolution: { default: 8 }, // how many slice segments in the sphere's circumference
     nodeColor: { default: 'color' },
     nodeAutoColorBy: {},
-    nodeOpacity: 0.75,
+    nodeOpacity: { default: 0.75 },
     nodeThreeObject: {},
     linkSource: { default: 'source' },
     linkTarget: { default: 'target' },
