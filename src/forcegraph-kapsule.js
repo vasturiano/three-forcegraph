@@ -84,7 +84,7 @@ export default Kapsule({
     linkColor: { default: 'color' },
     linkAutoColorBy: {},
     linkOpacity: { default: 0.2 },
-    linkWidth: {}, // Rounded to nearest 1/10th. For falsy values use dimensionless line with 1px regardless of distance.
+    linkWidth: {}, // Rounded to nearest decimal. For falsy values use dimensionless line with 1px regardless of distance.
     linkResolution: { default: 6 }, // how many radial segments in each line cylinder's geometry
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaDecay: { default: 0.0228 },
