@@ -1,20 +1,19 @@
 import {
+  Mesh,
+  MeshLambertMaterial,
   SphereGeometry,
   CylinderGeometry,
-  BufferGeometry,
-  BufferAttribute,
-  Mesh,
-  MeshLambertMaterial
+  Line,
+  LineBasicMaterial
 } from 'three';
 
 const three = window.THREE
   ? window.THREE // Prefer consumption from global THREE, if exists
   : {
-    SphereGeometry,
-    BufferGeometry,
-    BufferAttribute,
     Mesh,
     MeshLambertMaterial,
+    SphereGeometry,
+    CylinderGeometry,
     Line,
     LineBasicMaterial
   };
