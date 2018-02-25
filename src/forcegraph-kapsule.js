@@ -55,7 +55,7 @@ export default Kapsule({
         nodes: [],
         links: []
       },
-      onChange(_, state) { state.onFrame = null; } // Pause simulation
+      onChange(_, state) { state.engineRunning = false; } // Pause simulation
     },
     numDimensions: {
       default: 3,
@@ -86,6 +86,10 @@ export default Kapsule({
     linkOpacity: { default: 0.2 },
     linkWidth: {}, // Rounded to nearest decimal. For falsy values use dimensionless line with 1px regardless of distance.
     linkResolution: { default: 6 }, // how many radial segments in each line cylinder's geometry
+    linkDirectionalParticles: { default: 0 }, // animate photons travelling in the link direction
+    linkDirectionalParticleWidth: { default: 0.5 },
+    linkDirectionalParticleResolution: { default: 4 }, // how many slice segments in the particle sphere's circumference
+    linkDirectionalParticleSpeed: { default: 0.01, triggerUpdate: false }, // in link length ratio per frame
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaDecay: { default: 0.0228 },
     d3VelocityDecay: { default: 0.4 },
@@ -110,8 +114,96 @@ export default Kapsule({
       return this;
     },
     tickFrame: function(state) {
-      if(state.onFrame) state.onFrame();
+      const isD3Sim = state.forceEngine !== 'ngraph';
+
+      if (state.engineRunning) { layoutTick(); }
+      updatePhotons();
+
       return this;
+
+      //
+
+      function layoutTick() {
+        if (++state.cntTicks > state.cooldownTicks || (new Date()) - state.startTickTime > state.cooldownTime) {
+          state.engineRunning = false; // Stop ticking graph
+        } else {
+          state.layout[isD3Sim ? 'tick' : 'step'](); // Tick it
+        }
+
+        // Update nodes position
+        state.graphData.nodes.forEach(node => {
+          const obj = node.__threeObj;
+          if (!obj) return;
+
+          const pos = isD3Sim ? node : state.layout.getNodePosition(node[state.nodeId]);
+
+          obj.position.x = pos.x;
+          obj.position.y = pos.y || 0;
+          obj.position.z = pos.z || 0;
+        });
+
+        // Update links position
+        state.graphData.links.forEach(link => {
+          const line = link.__lineObj;
+          if (!line) return;
+
+          const pos = isD3Sim
+            ? link
+            : state.layout.getLinkPosition(state.layout.graph.getLink(link.source, link.target).id);
+          const start = pos[isD3Sim ? 'source' : 'from'];
+          const end = pos[isD3Sim ? 'target' : 'to'];
+
+          if (line.type === 'Line') { // Update line geometry
+            const linePos = line.geometry.attributes.position;
+
+            linePos.array[0] = start.x;
+            linePos.array[1] = start.y || 0;
+            linePos.array[2] = start.z || 0;
+            linePos.array[3] = end.x;
+            linePos.array[4] = end.y || 0;
+            linePos.array[5] = end.z || 0;
+
+            linePos.needsUpdate = true;
+            line.geometry.computeBoundingSphere();
+          } else { // Update cylinder geometry
+            const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
+            const vEnd = new three.Vector3(end.x, end.y || 0, end.z || 0);
+            const distance = vStart.distanceTo(vEnd);
+
+            line.position.x = vStart.x;
+            line.position.y = vStart.y;
+            line.position.z = vStart.z;
+            line.lookAt(vEnd);
+            line.scale.z = distance;
+          }
+        });
+      }
+
+      function updatePhotons() {
+        // update link particle positions
+        const particleSpeedAccessor = accessorFn(state.linkDirectionalParticleSpeed);
+        state.graphData.links.forEach(link => {
+          const photons = link.__photonObjs;
+          if (!photons || !photons.length) return;
+
+          const pos = isD3Sim
+            ? link
+            : state.layout.getLinkPosition(state.layout.graph.getLink(link.source, link.target).id);
+          const start = pos[isD3Sim ? 'source' : 'from'];
+          const end = pos[isD3Sim ? 'target' : 'to'];
+
+          const particleSpeed = particleSpeedAccessor(link);
+
+          photons.forEach((photon, idx) => {
+            const photonPosRatio = photon.__progressRatio =
+              ((photon.__progressRatio || (idx / photons.length)) + particleSpeed) % 1;
+
+            ['x', 'y', 'z'].forEach(dim =>
+                photon.position[dim] = start[dim] + (end[dim] - start[dim]) * photonPosRatio || 0
+            );
+          });
+        });
+      }
     }
   },
 
@@ -120,7 +212,8 @@ export default Kapsule({
       .force('link', d3ForceLink())
       .force('charge', d3ForceManyBody())
       .force('center', d3ForceCenter())
-      .stop()
+      .stop(),
+    engineRunning: false
   }),
 
   init(threeObj, state) {
@@ -129,7 +222,7 @@ export default Kapsule({
   },
 
   update(state) {
-    state.onFrame = null; // Pause simulation
+    state.engineRunning = false; // Pause simulation
     state.onLoading();
 
     if (state.graphData.nodes.length || state.graphData.links.length) {
@@ -201,24 +294,30 @@ export default Kapsule({
 
     const linkColorAccessor = accessorFn(state.linkColor);
     const linkWidthAccessor = accessorFn(state.linkWidth);
-    const lineMaterials = {}; // indexed by color
-    const cylinderGeometries = {}; // indexed by width
-    state.graphData.links.forEach(link => {
-      const color = linkColorAccessor(link);
-      const width = Math.ceil(linkWidthAccessor(link) * 10) / 10;
+    const linkParticlesAccessor = accessorFn(state.linkDirectionalParticles);
+    const linkParticleWidthAccessor = accessorFn(state.linkDirectionalParticleWidth);
 
-      const useCylinder = !!width;
+    const lineMaterials = {}; // indexed by link color
+    const cylinderGeometries = {}; // indexed by link width
+    const particleMaterials = {}; // indexed by link color
+    const particleGeometries = {}; // indexed by particle width
+    state.graphData.links.forEach(link => {
+      // Add line
+      const color = linkColorAccessor(link);
+      const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
+
+      const useCylinder = !!linkWidth;
 
       let geometry;
       if (useCylinder) {
-        if (!cylinderGeometries.hasOwnProperty(width)) {
-          const r = width / 2;
+        if (!cylinderGeometries.hasOwnProperty(linkWidth)) {
+          const r = linkWidth / 2;
           geometry = new three.CylinderGeometry(r, r, 1, state.linkResolution, 1, false);
           geometry.applyMatrix(new three.Matrix4().makeTranslation(0, 1 / 2, 0));
           geometry.applyMatrix(new three.Matrix4().makeRotationX(Math.PI / 2));
-          cylinderGeometries[width] = geometry;
+          cylinderGeometries[linkWidth] = geometry;
         }
-        geometry = cylinderGeometries[width];
+        geometry = cylinderGeometries[linkWidth];
       } else { // Use plain line (constant width)
         geometry = new three.BufferGeometry();
         geometry.addAttribute('position', new three.BufferAttribute(new Float32Array(2 * 3), 3));
@@ -241,6 +340,28 @@ export default Kapsule({
       line.__data = link; // Attach link data
 
       state.graphScene.add(link.__lineObj = line);
+
+      // Add photon particles
+      const numPhotons = Math.round(Math.abs(linkParticlesAccessor(link)));
+      const photonR = Math.ceil(linkParticleWidthAccessor(link) * 10) / 10 / 2;
+
+      if (!particleGeometries.hasOwnProperty(photonR)) {
+        particleGeometries[photonR] = new three.SphereGeometry(photonR, state.linkDirectionalParticleResolution, state.linkDirectionalParticleResolution);
+      }
+      const particleGeometry = particleGeometries[photonR];
+
+      if (!particleMaterials.hasOwnProperty(color)) {
+        particleMaterials[color] = new three.MeshLambertMaterial({
+          color: colorStr2Hex(color || '#f0f0f0'),
+          transparent: true,
+          opacity: state.linkOpacity * 3
+        });
+      }
+      const particleMaterial = particleMaterials[color];
+
+      const photons = [...Array(numPhotons)].map(() => new three.Mesh(particleGeometry, particleMaterial));
+      photons.forEach(photon => state.graphScene.add(photon));
+      link.__photonObjs = photons;
     });
 
     // Feed data to force-directed layout
@@ -269,67 +390,10 @@ export default Kapsule({
 
     for (let i=0; i<state.warmupTicks; i++) { layout[isD3Sim?'tick':'step'](); } // Initial ticks before starting to render
 
-    let cntTicks = 0;
-    const startTickTime = new Date();
-    state.onFrame = layoutTick;
+    state.layout = layout;
+    state.cntTicks = 0;
+    state.startTickTime = new Date();
+    state.engineRunning = true;
     state.onFinishLoading();
-
-    //
-
-    function layoutTick() {
-      if (++cntTicks > state.cooldownTicks || (new Date()) - startTickTime > state.cooldownTime) {
-        state.onFrame = null; // Stop ticking graph
-      } else {
-        layout[isD3Sim ? 'tick' : 'step'](); // Tick it
-      }
-
-      // Update nodes position
-      state.graphData.nodes.forEach(node => {
-        const obj = node.__threeObj;
-        if (!obj) return;
-
-        const pos = isD3Sim ? node : layout.getNodePosition(node[state.nodeId]);
-
-        obj.position.x = pos.x;
-        obj.position.y = pos.y || 0;
-        obj.position.z = pos.z || 0;
-      });
-
-      // Update links position
-      state.graphData.links.forEach(link => {
-        const line = link.__lineObj;
-        if (!line) return;
-
-        const pos = isD3Sim
-          ? link
-          : layout.getLinkPosition(layout.graph.getLink(link.source, link.target).id);
-        const start = pos[isD3Sim ? 'source' : 'from'];
-        const end = pos[isD3Sim ? 'target' : 'to'];
-
-        if (line.type === 'Line') { // Update line geometry
-          const linePos = line.geometry.attributes.position;
-
-          linePos.array[0] = start.x;
-          linePos.array[1] = start.y || 0;
-          linePos.array[2] = start.z || 0;
-          linePos.array[3] = end.x;
-          linePos.array[4] = end.y || 0;
-          linePos.array[5] = end.z || 0;
-
-          linePos.needsUpdate = true;
-          line.geometry.computeBoundingSphere();
-        } else { // Update cylinder geometry
-          const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
-          const vEnd = new three.Vector3(end.x, end.y || 0, end.z || 0);
-          const distance = vStart.distanceTo(vEnd);
-
-          line.position.x = vStart.x;
-          line.position.y = vStart.y;
-          line.position.z = vStart.z;
-          line.lookAt(vEnd);
-          line.scale.z = distance;
-        }
-      });
-    }
   }
 });
