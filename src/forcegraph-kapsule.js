@@ -87,9 +87,9 @@ export default Kapsule({
     linkWidth: {}, // Rounded to nearest decimal. For falsy values use dimensionless line with 1px regardless of distance.
     linkResolution: { default: 6 }, // how many radial segments in each line cylinder's geometry
     linkDirectionalParticles: { default: 0 }, // animate photons travelling in the link direction
+    linkDirectionalParticleSpeed: { default: 0.01, triggerUpdate: false }, // in link length ratio per frame
     linkDirectionalParticleWidth: { default: 0.5 },
     linkDirectionalParticleResolution: { default: 4 }, // how many slice segments in the particle sphere's circumference
-    linkDirectionalParticleSpeed: { default: 0.01, triggerUpdate: false }, // in link length ratio per frame
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaDecay: { default: 0.0228 },
     d3VelocityDecay: { default: 0.4 },
