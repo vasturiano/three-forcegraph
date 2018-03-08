@@ -1,3 +1,4 @@
+import 'whatwg-fetch';
 import {
   Mesh,
   MeshLambertMaterial,
@@ -39,7 +40,6 @@ import forcelayout3d from 'ngraph.forcelayout3d';
 const ngraph = { graph, forcelayout, forcelayout3d };
 
 import Kapsule from 'kapsule';
-import qwest from 'qwest';
 import accessorFn from 'accessor-fn';
 
 import { autoColorObjects, colorStr2Hex } from './color-utils';
@@ -232,7 +232,8 @@ export default Kapsule({
     if (!state.fetchingJson && state.jsonUrl && !state.graphData.nodes.length && !state.graphData.links.length) {
       // (Re-)load data
       state.fetchingJson = true;
-      qwest.get(state.jsonUrl).then((_, json) => {
+
+      fetch(state.jsonUrl).then(r => r.json()).then(json => {
         state.fetchingJson = false;
         state.graphData = json;
         state._rerender();  // Force re-update

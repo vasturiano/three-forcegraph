@@ -20,5 +20,8 @@ export default {
     resolve(),
     commonJs(),
     babel({ exclude: 'node_modules/**' })
-  ]
+  ],
+  moduleContext: {
+    [require.resolve('whatwg-fetch')]: 'window'
+  }
 };
