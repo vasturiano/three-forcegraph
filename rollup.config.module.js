@@ -16,8 +16,5 @@ export default {
   external: [...Object.keys(dependencies), ...Object.keys(peerDependencies)],
   plugins: [
     babel()
-  ],
-  moduleContext: {
-    [require.resolve('whatwg-fetch')]: 'window'
-  }
+  ]
 };

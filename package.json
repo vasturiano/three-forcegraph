@@ -42,8 +42,7 @@
     "ngraph.forcelayout": "^0.5.0",
     "ngraph.forcelayout3d": "^0.0.16",
     "ngraph.graph": "^0.0.14",
-    "tinycolor2": "^1.4.1",
-    "whatwg-fetch": "^2.0.3"
+    "tinycolor2": "^1.4.1"
   },
   "peerDependencies": {
     "three": "^0.86.0"
