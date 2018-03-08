@@ -267,7 +267,12 @@ export default Kapsule({
 
       let obj;
       if (customObj) {
-        obj = customObj.clone();
+        obj = customObj;
+
+        if (state.nodeThreeObject === obj) {
+          // clone object if it's a shared object among all nodes
+          obj = obj.clone();
+        }
       } else { // Default object (sphere mesh)
         const val = valAccessor(node) || 1;
         if (!sphereGeometries.hasOwnProperty(val)) {
