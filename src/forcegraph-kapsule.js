@@ -88,6 +88,7 @@ export default Kapsule({
     linkDirectionalParticles: { default: 0 }, // animate photons travelling in the link direction
     linkDirectionalParticleSpeed: { default: 0.01, triggerUpdate: false }, // in link length ratio per frame
     linkDirectionalParticleWidth: { default: 0.5 },
+    linkDirectionalParticleColor: {},
     linkDirectionalParticleResolution: { default: 4 }, // how many slice segments in the particle sphere's circumference
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaDecay: { default: 0.0228 },
@@ -301,6 +302,7 @@ export default Kapsule({
     const linkWidthAccessor = accessorFn(state.linkWidth);
     const linkParticlesAccessor = accessorFn(state.linkDirectionalParticles);
     const linkParticleWidthAccessor = accessorFn(state.linkDirectionalParticleWidth);
+    const linkParticleColorAccessor = accessorFn(state.linkDirectionalParticleColor);
 
     const lineMaterials = {}; // indexed by link color
     const cylinderGeometries = {}; // indexed by link width
@@ -349,6 +351,7 @@ export default Kapsule({
       // Add photon particles
       const numPhotons = Math.round(Math.abs(linkParticlesAccessor(link)));
       const photonR = Math.ceil(linkParticleWidthAccessor(link) * 10) / 10 / 2;
+      const photonColor = linkParticleColorAccessor(link) || color || '#f0f0f0';
 
       if (!particleGeometries.hasOwnProperty(photonR)) {
         particleGeometries[photonR] = new three.SphereGeometry(photonR, state.linkDirectionalParticleResolution, state.linkDirectionalParticleResolution);
@@ -357,7 +360,7 @@ export default Kapsule({
 
       if (!particleMaterials.hasOwnProperty(color)) {
         particleMaterials[color] = new three.MeshLambertMaterial({
-          color: colorStr2Hex(color || '#f0f0f0'),
+          color: colorStr2Hex(photonColor),
           transparent: true,
           opacity: state.linkOpacity * 3
         });
