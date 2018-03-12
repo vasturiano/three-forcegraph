@@ -59,6 +59,10 @@ export default Kapsule({
     numDimensions: {
       default: 3,
       onChange(numDim, state) {
+        const chargeForce = state.d3ForceLayout.force('charge');
+        // Increase repulsion on 3D mode for improved spatial separation
+        if (chargeForce) { chargeForce.strength(numDim > 2 ? -60 : -30) }
+
         if (numDim < 3) { eraseDimension(state.graphData.nodes, 'z'); }
         if (numDim < 2) { eraseDimension(state.graphData.nodes, 'y'); }
 
