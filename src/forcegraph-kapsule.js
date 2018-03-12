@@ -91,11 +91,11 @@ export default Kapsule({
     linkDirectionalParticleColor: {},
     linkDirectionalParticleResolution: { default: 4 }, // how many slice segments in the particle sphere's circumference
     forceEngine: { default: 'd3' }, // d3 or ngraph
-    d3AlphaDecay: { default: 0.0228 },
-    d3VelocityDecay: { default: 0.4 },
-    warmupTicks: { default: 0 }, // how many times to tick the force engine at init before starting to render
-    cooldownTicks: { default: Infinity },
-    cooldownTime: { default: 15000 }, // ms
+    d3AlphaDecay: { default: 0.0228, triggerUpdate: false, onChange(alphaDecay, state) { state.d3ForceLayout.alphaDecay(alphaDecay) }},
+    d3VelocityDecay: { default: 0.4, triggerUpdate: false, onChange(velocityDecay, state) { state.d3ForceLayout.velocityDecay(velocityDecay) } },
+    warmupTicks: { default: 0, triggerUpdate: false }, // how many times to tick the force engine at init before starting to render
+    cooldownTicks: { default: Infinity, triggerUpdate: false },
+    cooldownTime: { default: 15000, triggerUpdate: false }, // ms
     onLoading: { default: () => {}, triggerUpdate: false },
     onFinishLoading: { default: () => {}, triggerUpdate: false }
   },
@@ -111,6 +111,13 @@ export default Kapsule({
         return state.d3ForceLayout.force(forceName); // Force getter
       }
       state.d3ForceLayout.force(forceName, forceFn); // Force setter
+      return this;
+    },
+    // reset cooldown state
+    resetCountdown: function(state) {
+      state.cntTicks = 0;
+      state.startTickTime = new Date();
+      state.engineRunning = true;
       return this;
     },
     tickFrame: function(state) {
@@ -380,8 +387,6 @@ export default Kapsule({
       (layout = state.d3ForceLayout)
         .stop()
         .alpha(1)// re-heat the simulation
-        .alphaDecay(state.d3AlphaDecay)
-        .velocityDecay(state.d3VelocityDecay)
         .numDimensions(state.numDimensions)
         .nodes(state.graphData.nodes)
         .force('link')
@@ -399,9 +404,7 @@ export default Kapsule({
     for (let i=0; i<state.warmupTicks; i++) { layout[isD3Sim?'tick':'step'](); } // Initial ticks before starting to render
 
     state.layout = layout;
-    state.cntTicks = 0;
-    state.startTickTime = new Date();
-    state.engineRunning = true;
+    this.resetCountdown();
     state.onFinishLoading();
   }
 });
