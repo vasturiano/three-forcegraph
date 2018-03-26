@@ -28,7 +28,7 @@
     "url": "https://github.com/vasturiano/three-forcegraph/issues"
   },
   "scripts": {
-    "build": "rm -rf dist && mkdir dist && rollup -c",
+    "build": "rimraf dist && rollup -c",
     "watch": "rollup -c -w",
     "minify": "uglifyjs dist/three-forcegraph.js -o dist/three-forcegraph.min.js -c -m --comments '/Version/'",
     "build-module": "rollup -c rollup.config.module.js",
@@ -53,6 +53,7 @@
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.6.1",
+    "rimraf": "^2.6.2",
     "rollup": "^0.57.0",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^9.1.0",
