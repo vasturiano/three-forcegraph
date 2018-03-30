@@ -307,6 +307,13 @@ export default Kapsule({
       obj.__graphObjType = 'node'; // Add object type
       obj.__data = node; // Attach node data
 
+      if (Array.isArray(obj.children)) {
+        obj.children.forEach(child => {
+          child.__graphObjType = 'node';
+          child.__data = node;
+        });
+      }
+
       state.graphScene.add(node.__threeObj = obj);
     });
 
