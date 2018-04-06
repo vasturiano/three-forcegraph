@@ -41,7 +41,7 @@ const ngraph = { graph, forcelayout, forcelayout3d };
 import Kapsule from 'kapsule';
 import accessorFn from 'accessor-fn';
 
-import { autoColorObjects, colorStr2Hex } from './color-utils';
+import { autoColorObjects, colorStr2Hex, colorAlpha } from './color-utils';
 
 //
 
@@ -297,7 +297,7 @@ export default Kapsule({
           sphereMaterials[color] = new three.MeshLambertMaterial({
             color: colorStr2Hex(color || '#ffffaa'),
             transparent: true,
-            opacity: state.nodeOpacity
+            opacity: state.nodeOpacity * colorAlpha(color)
           });
         }
 
@@ -346,7 +346,7 @@ export default Kapsule({
         lineMaterials[color] = new three.MeshLambertMaterial({
           color: colorStr2Hex(color || '#f0f0f0'),
           transparent: true,
-          opacity: state.linkOpacity
+          opacity: state.linkOpacity * colorAlpha(color)
         });
       }
       const lineMaterial = lineMaterials[color];

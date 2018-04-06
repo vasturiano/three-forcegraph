@@ -2,6 +2,7 @@ import { schemePaired } from 'd3-scale-chromatic';
 import tinyColor from 'tinycolor2';
 
 const colorStr2Hex = str => isNaN(str) ? parseInt(tinyColor(str).toHex(), 16) : str;
+const colorAlpha = str => isNaN(str) ? tinyColor(str).getAlpha(): 1;
 
 // Autoset attribute colorField by colorByAccessor property
 // If an object has already a color, don't set it
@@ -22,4 +23,4 @@ function autoColorObjects(objects, colorByAccessor, colorField) {
   });
 }
 
-export { autoColorObjects, colorStr2Hex };
+export { autoColorObjects, colorStr2Hex, colorAlpha };
