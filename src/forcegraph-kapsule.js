@@ -165,6 +165,8 @@ export default Kapsule({
           const start = pos[isD3Sim ? 'source' : 'from'];
           const end = pos[isD3Sim ? 'target' : 'to'];
 
+          if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
+
           if (line.type === 'Line') { // Update line geometry
             const linePos = line.geometry.attributes.position;
 
@@ -203,6 +205,8 @@ export default Kapsule({
             : state.layout.getLinkPosition(state.layout.graph.getLink(link.source, link.target).id);
           const start = pos[isD3Sim ? 'source' : 'from'];
           const end = pos[isD3Sim ? 'target' : 'to'];
+
+          if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
           const particleSpeed = particleSpeedAccessor(link);
 
@@ -393,10 +397,15 @@ export default Kapsule({
         .stop()
         .alpha(1)// re-heat the simulation
         .numDimensions(state.numDimensions)
-        .nodes(state.graphData.nodes)
-        .force('link')
+        .nodes(state.graphData.nodes);
+
+      // add links (if link force is still active)
+      const linkForce = state.d3ForceLayout.force('link');
+      if (linkForce) {
+        linkForce
           .id(d => d[state.nodeId])
           .links(state.graphData.links);
+      }
     } else {
       // ngraph
       const graph = ngraph.graph();
