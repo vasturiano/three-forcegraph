@@ -89,6 +89,7 @@ export default Kapsule({
     linkOpacity: { default: 0.2 },
     linkWidth: {}, // Rounded to nearest decimal. For falsy values use dimensionless line with 1px regardless of distance.
     linkResolution: { default: 6 }, // how many radial segments in each line cylinder's geometry
+    linkMaterial: {},
     linkDirectionalParticles: { default: 0 }, // animate photons travelling in the link direction
     linkDirectionalParticleSpeed: { default: 0.01, triggerUpdate: false }, // in link length ratio per frame
     linkDirectionalParticleWidth: { default: 0.5 },
@@ -314,6 +315,7 @@ export default Kapsule({
       state.graphScene.add(node.__threeObj = obj);
     });
 
+    const customLinkMaterialAccessor = accessorFn(state.linkMaterial);
     const linkColorAccessor = accessorFn(state.linkColor);
     const linkWidthAccessor = accessorFn(state.linkWidth);
     const linkParticlesAccessor = accessorFn(state.linkDirectionalParticles);
@@ -346,14 +348,17 @@ export default Kapsule({
         geometry.addAttribute('position', new three.BufferAttribute(new Float32Array(2 * 3), 3));
       }
 
-      if (!lineMaterials.hasOwnProperty(color)) {
-        lineMaterials[color] = new three.MeshLambertMaterial({
-          color: colorStr2Hex(color || '#f0f0f0'),
-          transparent: true,
-          opacity: state.linkOpacity * colorAlpha(color)
-        });
+      let lineMaterial = customLinkMaterialAccessor(link);
+      if (!lineMaterial) {
+        if (!lineMaterials.hasOwnProperty(color)) {
+          lineMaterials[color] = new three.MeshLambertMaterial({
+            color: colorStr2Hex(color || '#f0f0f0'),
+            transparent: true,
+            opacity: state.linkOpacity * colorAlpha(color)
+          });
+        }
+        lineMaterial = lineMaterials[color];
       }
-      const lineMaterial = lineMaterials[color];
 
       const line = new three[useCylinder ? 'Mesh' : 'Line'](geometry, lineMaterial);
 
