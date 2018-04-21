@@ -73,8 +73,8 @@ myGraph.tickFrame();
 | <b>cooldownTime</b>([<i>num</i>]) | Getter/setter for how long (ms) to render for before stopping and freezing the layout engine. | 15000 |
 | <b>onLoading</b>(<i>fn</i>) | Callback function for notification that data is being loaded, and the rendering engine is temporarily paused. | - |
 | <b>onFinishLoading</b>(<i>fn</i>) | Callback function for notification that the component has finished loading data and iterating through the warmup phase, and the rendering engine has been resumed. | - |
-| <b>tickFrame() | This method should be called on each cycle of the global renderer to iterate the underlying force simulation engine and update the nodes/links objects' positions. ||
-| <b>resetProps() | Reset all object properties to their default value. ||
+| <b>tickFrame()</b> | This method should be called on each cycle of the global renderer to iterate the underlying force simulation engine and update the nodes/links objects' positions. ||
+| <b>resetProps()</b> | Reset all object properties to their default value. ||
 
 ### Input JSON syntax
 
