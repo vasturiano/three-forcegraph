@@ -272,9 +272,20 @@ export default Kapsule({
       link.target = link[state.linkTarget];
     });
 
-    // Add WebGL objects
-    while (state.graphScene.children.length) { state.graphScene.remove(state.graphScene.children[0]) } // Clear the place
+    // Clear the scene
+    const deallocate = obj => {
+      if (obj.geometry) { obj.geometry.dispose(); }
+      if (obj.material) { obj.material.dispose(); }
+      if (obj.texture) { obj.texture.dispose(); }
+      if (obj.children) { obj.children.forEach(deallocate) }
+    };
+    while (state.graphScene.children.length) {
+      const obj = state.graphScene.children[0];
+      state.graphScene.remove(obj);
+      deallocate(obj);
+    }
 
+    // Add WebGL objects
     const customNodeObjectAccessor = accessorFn(state.nodeThreeObject);
     const valAccessor = accessorFn(state.nodeVal);
     const colorAccessor = accessorFn(state.nodeColor);
