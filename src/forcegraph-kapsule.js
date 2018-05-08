@@ -365,7 +365,8 @@ export default Kapsule({
           lineMaterials[color] = new three.MeshLambertMaterial({
             color: colorStr2Hex(color || '#f0f0f0'),
             transparent: true,
-            opacity: state.linkOpacity * colorAlpha(color)
+            opacity: state.linkOpacity * colorAlpha(color),
+            depthWrite: false // Prevent transparency issues
           });
         }
         lineMaterial = lineMaterials[color];
