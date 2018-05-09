@@ -362,11 +362,12 @@ export default Kapsule({
       let lineMaterial = customLinkMaterialAccessor(link);
       if (!lineMaterial) {
         if (!lineMaterials.hasOwnProperty(color)) {
+          const lineOpacity = state.linkOpacity * colorAlpha(color);
           lineMaterials[color] = new three.MeshLambertMaterial({
             color: colorStr2Hex(color || '#f0f0f0'),
-            transparent: true,
-            opacity: state.linkOpacity * colorAlpha(color),
-            depthWrite: false // Prevent transparency issues
+            transparent: lineOpacity < 1,
+            opacity: lineOpacity,
+            depthWrite: lineOpacity >= 1 // Prevent transparency issues
           });
         }
         lineMaterial = lineMaterials[color];
