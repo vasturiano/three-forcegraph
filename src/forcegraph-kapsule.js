@@ -8,7 +8,9 @@ import {
   SphereGeometry,
   CylinderGeometry,
   Line,
-  LineBasicMaterial
+  LineBasicMaterial,
+  QuadraticBezierCurve3,
+  CubicBezierCurve3
 } from 'three';
 
 const three = window.THREE
@@ -23,7 +25,9 @@ const three = window.THREE
     SphereGeometry,
     CylinderGeometry,
     Line,
-    LineBasicMaterial
+    LineBasicMaterial,
+    QuadraticBezierCurve3,
+    CubicBezierCurve3
   };
 
 import {
@@ -88,7 +92,9 @@ export default Kapsule({
     linkAutoColorBy: {},
     linkOpacity: { default: 0.2 },
     linkWidth: {}, // Rounded to nearest decimal. For falsy values use dimensionless line with 1px regardless of distance.
-    linkResolution: { default: 6 }, // how many radial segments in each line cylinder's geometry
+    linkResolution: { default: 6 }, // how many radial segments in each line tube's geometry
+    linkCurvature: { default: 0, triggerUpdate: false }, // line curvature radius (0: straight, 1: semi-circle)
+    linkCurveRotation: { default: 0, triggerUpdate: false }, // line curve rotation along the line axis (0: interection with XY plane, PI: upside down)
     linkMaterial: {},
     linkDirectionalParticles: { default: 0 }, // animate photons travelling in the link direction
     linkDirectionalParticleSpeed: { default: 0.01, triggerUpdate: false }, // in link length ratio per frame
@@ -156,6 +162,8 @@ export default Kapsule({
         });
 
         // Update links position
+        const linkCurvatureAccessor = accessorFn(state.linkCurvature);
+        const linkCurveRotationAccessor = accessorFn(state.linkCurveRotation);
         state.graphData.links.forEach(link => {
           const line = link.__lineObj;
           if (!line) return;
@@ -168,19 +176,71 @@ export default Kapsule({
 
           if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
+          link.__curve = null; // Wipe curve ref from object
+
           if (line.type === 'Line') { // Update line geometry
-            const linePos = line.geometry.attributes.position;
+            const curvature = linkCurvatureAccessor(link);
+            const curveResolution = 30; // # line segments
 
-            linePos.array[0] = start.x;
-            linePos.array[1] = start.y || 0;
-            linePos.array[2] = start.z || 0;
-            linePos.array[3] = end.x;
-            linePos.array[4] = end.y || 0;
-            linePos.array[5] = end.z || 0;
+            if (!curvature) {
+              let linePos = line.geometry.getAttribute('position');
+              if (!linePos || !linePos.array || linePos.array.length !== 6) {
+                line.geometry.addAttribute('position', linePos = new three.BufferAttribute(new Float32Array(2 * 3), 3));
+              }
 
-            linePos.needsUpdate = true;
+              linePos.array[0] = start.x;
+              linePos.array[1] = start.y || 0;
+              linePos.array[2] = start.z || 0;
+              linePos.array[3] = end.x;
+              linePos.array[4] = end.y || 0;
+              linePos.array[5] = end.z || 0;
+
+              linePos.needsUpdate = true;
+
+            } else { // bezier curve line
+              const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
+              const vEnd= new three.Vector3(end.x, end.y || 0, end.z || 0);
+
+              const l = vStart.distanceTo(vEnd); // line length
+
+              let curve;
+              const curveRotation = linkCurveRotationAccessor(link);
+
+              if (l > 0) {
+                const dx = end.x - start.x;
+                const dy = end.y - start.y || 0;
+
+                const vLine = new three.Vector3()
+                  .subVectors(vEnd, vStart);
+
+                const cp = vLine.clone()
+                  .multiplyScalar(curvature)
+                  .cross((dx !== 0 || dy !== 0) ? new three.Vector3(0, 0, 1) : new three.Vector3(0, 1, 0)) // avoid cross-product of parallel vectors (prefer Z, fallback to Y)
+                  .applyAxisAngle(vLine.normalize(), curveRotation) // rotate along line axis according to linkCurveRotation
+                  .add((new three.Vector3()).addVectors(vStart, vEnd).divideScalar(2));
+
+                curve = new three.QuadraticBezierCurve3(vStart, cp, vEnd);
+              } else { // Same point, draw a loop
+                const d = curvature * 70;
+                const endAngle = -curveRotation; // Rotate clockwise (from Z angle perspective)
+                const startAngle = endAngle + Math.PI / 2;
+
+                curve = new three.CubicBezierCurve3(
+                  vStart,
+                  new three.Vector3(d * Math.cos(startAngle), d * Math.sin(startAngle), 0).add(vStart),
+                  new three.Vector3(d * Math.cos(endAngle), d * Math.sin(endAngle), 0).add(vStart),
+                  vEnd
+                );
+              }
+
+              line.geometry.setFromPoints(curve.getPoints(curveResolution));
+              link.__curve = curve;
+            }
             line.geometry.computeBoundingSphere();
+
           } else { // Update cylinder geometry
+            // links with width ignore linkCurvature because TubeGeometries can't be updated
+
             const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
             const vEnd = new three.Vector3(end.x, end.y || 0, end.z || 0);
             const distance = vStart.distanceTo(vEnd);
@@ -211,13 +271,24 @@ export default Kapsule({
 
           const particleSpeed = particleSpeedAccessor(link);
 
+          const getPhotonPos = link.__curve
+            ? t => link.__curve.getPoint(t) // interpolate along bezier curve
+            : t => {
+              // straight line: interpolate linearly
+              const iplt = (dim, start, end, t) => start[dim] + (end[dim] - start[dim]) * t || 0;
+              return {
+                x: iplt('x', start, end, t),
+                y: iplt('y', start, end, t),
+                z: iplt('z', start, end, t)
+              }
+            };
+
           photons.forEach((photon, idx) => {
             const photonPosRatio = photon.__progressRatio =
               ((photon.__progressRatio || (idx / photons.length)) + particleSpeed) % 1;
 
-            ['x', 'y', 'z'].forEach(dim =>
-                photon.position[dim] = start[dim] + (end[dim] - start[dim]) * photonPosRatio || 0
-            );
+            const pos = getPhotonPos(photonPosRatio);
+            ['x', 'y', 'z'].forEach(dim => photon.position[dim] = pos[dim]);
           });
         });
       }
@@ -356,7 +427,6 @@ export default Kapsule({
         geometry = cylinderGeometries[linkWidth];
       } else { // Use plain line (constant width)
         geometry = new three.BufferGeometry();
-        geometry.addAttribute('position', new three.BufferAttribute(new Float32Array(2 * 3), 3));
       }
 
       let lineMaterial = customLinkMaterialAccessor(link);
