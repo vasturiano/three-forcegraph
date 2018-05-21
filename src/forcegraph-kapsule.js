@@ -54,7 +54,7 @@ export default Kapsule({
   props: {
     jsonUrl: {
       onChange: function(jsonUrl, state) {
-        if (jsonUrl && !state.fetchingJson && !state.graphData.nodes.length) {
+        if (jsonUrl && !state.fetchingJson) {
           // Load data asynchronously
           state.fetchingJson = true;
           state.onLoading();
@@ -339,6 +339,8 @@ export default Kapsule({
   },
 
   update(state) {
+    state.engineRunning = false; // pause simulation
+
     if (state.sceneNeedsRepopulating) {
       state.sceneNeedsRepopulating = false;
 
@@ -529,5 +531,7 @@ export default Kapsule({
 
       state.onFinishLoading();
     }
+
+    state.engineRunning = true; // resume simulation
   }
 });
