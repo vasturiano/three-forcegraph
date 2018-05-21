@@ -77,6 +77,7 @@ export default Kapsule({
           console.info('force-graph loading', graphData.nodes.length + ' nodes', graphData.links.length + ' links');
         }
 
+        state.engineRunning = false; // Pause simulation immediately
         state.sceneNeedsRepopulating = true;
         state.simulationNeedsReheating = true;
       }
