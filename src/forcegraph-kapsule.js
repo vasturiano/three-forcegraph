@@ -52,7 +52,21 @@ import { autoColorObjects, colorStr2Hex, colorAlpha } from './color-utils';
 export default Kapsule({
 
   props: {
-    jsonUrl: {},
+    jsonUrl: {
+      onChange: function(jsonUrl, state) {
+        if (jsonUrl && !state.fetchingJson && !state.graphData.nodes.length) {
+          // Load data asynchronously
+          state.fetchingJson = true;
+          state.onLoading();
+
+          fetch(jsonUrl).then(r => r.json()).then(json => {
+            state.fetchingJson = false;
+            this.graphData(json);
+          });
+        }
+      },
+      triggerUpdate: false
+    },
     graphData: {
       default: {
         nodes: [],
@@ -124,6 +138,9 @@ export default Kapsule({
       }
       state.d3ForceLayout.force(forceName, forceFn); // Force setter
       return this;
+    },
+    _updateScene: function(state) {
+
     },
     // reset cooldown state
     resetCountdown: function(state) {
@@ -311,21 +328,9 @@ export default Kapsule({
 
   update(state) {
     state.engineRunning = false; // Pause simulation
-    state.onLoading();
 
     if (state.graphData.nodes.length || state.graphData.links.length) {
       console.info('force-graph loading', state.graphData.nodes.length + ' nodes', state.graphData.links.length + ' links');
-    }
-
-    if (!state.fetchingJson && state.jsonUrl && !state.graphData.nodes.length && !state.graphData.links.length) {
-      // (Re-)load data
-      state.fetchingJson = true;
-
-      fetch(state.jsonUrl).then(r => r.json()).then(json => {
-        state.fetchingJson = false;
-        state.graphData = json;
-        state._rerender();  // Force re-update
-      });
     }
 
     if (state.nodeAutoColorBy !== null) {
