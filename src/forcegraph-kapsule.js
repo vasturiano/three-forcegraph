@@ -7,6 +7,7 @@ import {
   Vector3,
   SphereGeometry,
   CylinderGeometry,
+  ConeGeometry,
   Line,
   LineBasicMaterial,
   QuadraticBezierCurve3,
@@ -24,6 +25,7 @@ const three = window.THREE
     Vector3,
     SphereGeometry,
     CylinderGeometry,
+    ConeGeometry,
     Line,
     LineBasicMaterial,
     QuadraticBezierCurve3,
@@ -120,6 +122,10 @@ export default Kapsule({
     linkCurvature: { default: 0, triggerUpdate: false }, // line curvature radius (0: straight, 1: semi-circle)
     linkCurveRotation: { default: 0, triggerUpdate: false }, // line curve rotation along the line axis (0: interection with XY plane, PI: upside down)
     linkMaterial: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
+    linkDirectionalArrowLength: { default: 0, onChange(_, state) { state.sceneNeedsRepopulating = true } },
+    linkDirectionalArrowColor: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
+    linkDirectionalArrowRelPos: { default: 0.5, triggerUpdate: false }, // value between 0<>1 indicating the relative pos along the (exposed) line
+    linkDirectionalArrowResolution: { default: 8, onChange(_, state) { state.sceneNeedsRepopulating = true } }, // how many slice segments in the arrow's conic circumference
     linkDirectionalParticles: { default: 0, onChange(_, state) { state.sceneNeedsRepopulating = true } }, // animate photons travelling in the link direction
     linkDirectionalParticleSpeed: { default: 0.01, triggerUpdate: false }, // in link length ratio per frame
     linkDirectionalParticleWidth: { default: 0.5, onChange(_, state) { state.sceneNeedsRepopulating = true } },
@@ -163,6 +169,7 @@ export default Kapsule({
       const isD3Sim = state.forceEngine !== 'ngraph';
 
       if (state.engineRunning) { layoutTick(); }
+      updateArrows();
       updatePhotons();
 
       return this;
@@ -278,6 +285,56 @@ export default Kapsule({
             line.lookAt(vEnd);
             line.scale.z = distance;
           }
+        });
+      }
+
+      function updateArrows() {
+        // update link arrow position
+        const arrowRelPosAccessor = accessorFn(state.linkDirectionalArrowRelPos);
+        const arrowLengthAccessor = accessorFn(state.linkDirectionalArrowLength);
+        const nodeValAccessor = accessorFn(state.nodeVal);
+
+        state.graphData.links.forEach(link => {
+          const arrowObj = link.__arrowObj;
+          if (!arrowObj) return;
+
+          const pos = isD3Sim
+            ? link
+            : state.layout.getLinkPosition(state.layout.graph.getLink(link.source, link.target).id);
+          const start = pos[isD3Sim ? 'source' : 'from'];
+          const end = pos[isD3Sim ? 'target' : 'to'];
+
+          if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
+
+          const startR = Math.sqrt(Math.max(0, nodeValAccessor(start) || 1)) * state.nodeRelSize;
+          const endR = Math.sqrt(Math.max(0, nodeValAccessor(end) || 1)) * state.nodeRelSize;
+
+          const arrowLength = arrowLengthAccessor(link);
+          const arrowRelPos = arrowRelPosAccessor(link);
+
+          const getPosAlongLine = link.__curve
+            ? t => link.__curve.getPoint(t) // interpolate along bezier curve
+            : t => {
+            // straight line: interpolate linearly
+            const iplt = (dim, start, end, t) => start[dim] + (end[dim] - start[dim]) * t || 0;
+            return {
+              x: iplt('x', start, end, t),
+              y: iplt('y', start, end, t),
+              z: iplt('z', start, end, t)
+            }
+          };
+
+          const lineLen = link.__curve
+            ? link.__curve.getLength()
+            : Math.sqrt(['x', 'y', 'z'].map(dim => Math.pow((end[dim] || 0) - (start[dim] || 0), 2)).reduce((acc, v) => acc + v, 0));
+
+          const posAlongLine = startR + arrowLength + (lineLen - startR - endR - arrowLength) * arrowRelPos;
+
+          const arrowHead = getPosAlongLine(posAlongLine / lineLen);
+          const arrowTail = getPosAlongLine((posAlongLine - arrowLength) / lineLen);
+
+          ['x', 'y', 'z'].forEach(dim => arrowObj.position[dim] = arrowTail[dim]);
+          arrowObj.lookAt(arrowHead.x, arrowHead.y, arrowHead.z);
         });
       }
 
@@ -410,6 +467,8 @@ export default Kapsule({
       const customLinkMaterialAccessor = accessorFn(state.linkMaterial);
       const linkColorAccessor = accessorFn(state.linkColor);
       const linkWidthAccessor = accessorFn(state.linkWidth);
+      const linkArrowLengthAccessor = accessorFn(state.linkDirectionalArrowLength);
+      const linkArrowColorAccessor = accessorFn(state.linkDirectionalArrowColor);
       const linkParticlesAccessor = accessorFn(state.linkDirectionalParticles);
       const linkParticleWidthAccessor = accessorFn(state.linkDirectionalParticleWidth);
       const linkParticleColorAccessor = accessorFn(state.linkDirectionalParticleColor);
@@ -461,6 +520,28 @@ export default Kapsule({
         line.__data = link; // Attach link data
 
         state.graphScene.add(link.__lineObj = line);
+
+        // Add arrow
+        const arrowLength = linkArrowLengthAccessor(link);
+        if (arrowLength && arrowLength > 0) {
+          const arrowColor = linkArrowColorAccessor(link) || color || '#f0f0f0';
+
+          const coneGeometry = new three.ConeGeometry(arrowLength * 0.25, arrowLength, state.linkDirectionalArrowResolution);
+          // Correct orientation
+          coneGeometry.translate(0, arrowLength / 2, 0);
+          coneGeometry.rotateX(Math.PI / 2);
+
+          const arrowObj = new three.Mesh(
+            coneGeometry,
+            new three.MeshLambertMaterial({
+              color: colorStr2Hex(arrowColor),
+              transparent: true,
+              opacity: state.linkOpacity * 3
+            })
+          );
+
+          state.graphScene.add(link.__arrowObj = arrowObj);
+        }
 
         // Add photon particles
         const numPhotons = Math.round(Math.abs(linkParticlesAccessor(link)));
