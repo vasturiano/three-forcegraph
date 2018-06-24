@@ -413,7 +413,16 @@ export default Kapsule({
       // Clear the scene
       const deallocate = obj => {
         if (obj.geometry) { obj.geometry.dispose(); }
-        if (obj.material) { obj.material.dispose(); }
+        if (obj.material) {
+            if (Array.isArray(obj.material)) {
+                obj.material.forEach(material => {
+                    material.dispose();
+                });
+            }
+            else {
+                obj.material.dispose();
+            }
+          }
         if (obj.texture) { obj.texture.dispose(); }
         if (obj.children) { obj.children.forEach(deallocate) }
       };
