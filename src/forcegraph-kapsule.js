@@ -139,7 +139,9 @@ export default Kapsule({
     cooldownTicks: { default: Infinity, triggerUpdate: false },
     cooldownTime: { default: 15000, triggerUpdate: false }, // ms
     onLoading: { default: () => {}, triggerUpdate: false },
-    onFinishLoading: { default: () => {}, triggerUpdate: false }
+    onFinishLoading: { default: () => {}, triggerUpdate: false },
+    onEngineTick: { default: () => {}, triggerUpdate: false },
+    onEngineStop: { default: () => {}, triggerUpdate: false }
   },
 
   aliases: {
@@ -179,8 +181,10 @@ export default Kapsule({
       function layoutTick() {
         if (++state.cntTicks > state.cooldownTicks || (new Date()) - state.startTickTime > state.cooldownTime) {
           state.engineRunning = false; // Stop ticking graph
+          state.onEngineStop();
         } else {
           state.layout[isD3Sim ? 'tick' : 'step'](); // Tick it
+          state.onEngineTick();
         }
 
         // Update nodes position
