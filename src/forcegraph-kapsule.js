@@ -557,14 +557,14 @@ export default Kapsule({
         }
         const particleGeometry = particleGeometries[photonR];
 
-        if (!particleMaterials.hasOwnProperty(color)) {
-          particleMaterials[color] = new three.MeshLambertMaterial({
+        if (!particleMaterials.hasOwnProperty(photonColor)) {
+          particleMaterials[photonColor] = new three.MeshLambertMaterial({
             color: colorStr2Hex(photonColor),
             transparent: true,
             opacity: state.linkOpacity * 3
           });
         }
-        const particleMaterial = particleMaterials[color];
+        const particleMaterial = particleMaterials[photonColor];
 
         const photons = [...Array(numPhotons)].map(() => new three.Mesh(particleGeometry, particleMaterial));
         photons.forEach(photon => state.graphScene.add(photon));
