@@ -482,6 +482,9 @@ export default Kapsule({
       const particleMaterials = {}; // indexed by link color
       const particleGeometries = {}; // indexed by particle width
       state.graphData.links.forEach(link => {
+
+        if (link.visible !== undefined && link.visible == false) return;
+
         // Add line
         const color = linkColorAccessor(link);
         const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
