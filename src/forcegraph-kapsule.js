@@ -114,6 +114,7 @@ export default Kapsule({
     nodeThreeObject: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkSource: { default: 'source', onChange(_, state) { state.simulationNeedsReheating = true } },
     linkTarget: { default: 'target', onChange(_, state) { state.simulationNeedsReheating = true } },
+    linkVisibility: { default: true, onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkColor: { default: 'color', onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkAutoColorBy: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkOpacity: { default: 0.2, onChange(_, state) { state.sceneNeedsRepopulating = true } },
@@ -469,6 +470,7 @@ export default Kapsule({
       });
 
       const customLinkMaterialAccessor = accessorFn(state.linkMaterial);
+      const linkVisibilityAccessor = accessorFn(state.linkVisibility);
       const linkColorAccessor = accessorFn(state.linkColor);
       const linkWidthAccessor = accessorFn(state.linkWidth);
       const linkArrowLengthAccessor = accessorFn(state.linkDirectionalArrowLength);
@@ -483,7 +485,7 @@ export default Kapsule({
       const particleGeometries = {}; // indexed by particle width
       state.graphData.links.forEach(link => {
 
-        if (link.visible !== undefined && link.visible == false) return;
+        if (!linkVisibilityAccessor(link)) return;
 
         // Add line
         const color = linkColorAccessor(link);
