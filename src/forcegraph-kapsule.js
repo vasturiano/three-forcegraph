@@ -492,8 +492,11 @@ export default Kapsule({
       const particleMaterials = {}; // indexed by link color
       const particleGeometries = {}; // indexed by particle width
       state.graphData.links.forEach(link => {
-
-        if (!linkVisibilityAccessor(link)) return;
+        if (!linkVisibilityAccessor(link)) {
+          // Exclude non-visible links
+          link.__lineObj = link.__arrowObj = link.__photonObjs = null;
+          return;
+        }
 
         // Add line
         const color = linkColorAccessor(link);
