@@ -415,11 +415,19 @@ export default Kapsule({
       }
 
       // Clear the scene
+      const materialDispose = material => {
+        if (material instanceof Array) {
+          material.forEach(materialDispose);
+        } else {
+          if (material.map) { material.map.dispose(); }
+          material.dispose();
+        }
+      };
       const deallocate = obj => {
         if (obj.geometry) { obj.geometry.dispose(); }
-        if (obj.material) { obj.material instanceof Array ? obj.material.forEach(m => { if (m.map) m.map.dispose(); m.dispose(); }) : obj.material.dispose(); }
+        if (obj.material) { materialDispose(obj.material); }
         if (obj.texture) { obj.texture.dispose(); }
-        if (obj.children) { obj.children.forEach(deallocate) }
+        if (obj.children) { obj.children.forEach(deallocate); }
       };
       while (state.graphScene.children.length) {
         const obj = state.graphScene.children[0];
