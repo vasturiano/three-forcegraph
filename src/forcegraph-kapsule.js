@@ -628,7 +628,7 @@ export default Kapsule({
         const nodeDepths = state.dagMode && getDagDepths(state.graphData, node => node[state.nodeId]);
         const maxDepth = Math.max(...Object.values(nodeDepths || []));
         const dagLevelDistance = state.dagLevelDistance || (
-          state.graphData.nodes.length / maxDepth * DAG_LEVEL_NODE_RATIO
+          state.graphData.nodes.length / (maxDepth || 1) * DAG_LEVEL_NODE_RATIO
           * (['radialin', 'radialout'].indexOf(state.dagMode) !== -1 ? 0.7 : 1)
         );
 
