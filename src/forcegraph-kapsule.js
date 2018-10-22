@@ -36,7 +36,8 @@ import {
   forceSimulation as d3ForceSimulation,
   forceLink as d3ForceLink,
   forceManyBody as d3ForceManyBody,
-  forceCenter as d3ForceCenter
+  forceCenter as d3ForceCenter,
+  forceRadial as d3ForceRadial
 } from 'd3-force-3d';
 
 import graph from 'ngraph.graph';
@@ -48,8 +49,11 @@ import Kapsule from 'kapsule';
 import accessorFn from 'accessor-fn';
 
 import { autoColorObjects, colorStr2Hex, colorAlpha } from './color-utils';
+import getDagDepths from './dagDepths';
 
 //
+
+const DAG_LEVEL_NODE_RATIO = 2;
 
 export default Kapsule({
 
@@ -104,6 +108,8 @@ export default Kapsule({
         }
       }
     },
+    dagMode: { onChange(_, state) { state.simulationNeedsReheating = true } }, // td, bu, lr, rl, zin, zout, radialin, radialout
+    dagLevelDistance: { onChange(_, state) { state.simulationNeedsReheating = true } },
     nodeRelSize: { default: 4, onChange(_, state) { state.sceneNeedsRepopulating = true } }, // volume per val unit
     nodeId: { default: 'id', onChange(_, state) { state.simulationNeedsReheating = true } },
     nodeVal: { default: 'val', onChange(_, state) { state.sceneNeedsRepopulating = true } },
@@ -389,6 +395,7 @@ export default Kapsule({
       .force('link', d3ForceLink())
       .force('charge', d3ForceManyBody())
       .force('center', d3ForceCenter())
+      .force('dagRadial', null)
       .stop(),
     engineRunning: false,
     sceneNeedsRepopulating: true,
@@ -601,7 +608,7 @@ export default Kapsule({
       // Feed data to force-directed layout
       const isD3Sim = state.forceEngine !== 'ngraph';
       let layout;
-       if (isD3Sim) {
+      if (isD3Sim) {
         // D3-force
         (layout = state.d3ForceLayout)
           .stop()
@@ -616,6 +623,42 @@ export default Kapsule({
             .id(d => d[state.nodeId])
             .links(state.graphData.links);
         }
+
+        // setup dag force constraints
+        const nodeDepths = state.dagMode && getDagDepths(state.graphData, node => node[state.nodeId]);
+        const maxDepth = Math.max(...Object.values(nodeDepths || []));
+        const dagLevelDistance = state.dagLevelDistance || (
+          state.graphData.nodes.length / maxDepth * DAG_LEVEL_NODE_RATIO
+          * (['radialin', 'radialout'].indexOf(state.dagMode) !== -1 ? 0.7 : 1)
+        );
+
+        // Fix nodes to x,y,z for dag mode
+        if (state.dagMode) {
+          const getFFn = (fix, invert) => node => !fix
+            ? undefined
+            : (nodeDepths[node[state.nodeId]] - maxDepth / 2) * dagLevelDistance * (invert ? -1 : 1);
+
+          const fxFn = getFFn(['lr', 'rl'].indexOf(state.dagMode) !== -1, state.dagMode === 'rl');
+          const fyFn = getFFn(['td', 'bu'].indexOf(state.dagMode) !== -1, state.dagMode === 'td');
+          const fzFn = getFFn(['zin', 'zout'].indexOf(state.dagMode) !== -1, state.dagMode === 'zout');
+
+          state.graphData.nodes.forEach(node => {
+            node.fx = fxFn(node);
+            node.fy = fyFn(node);
+            node.fz = fzFn(node);
+          });
+        };
+
+        // Use radial force for radial dags
+        state.d3ForceLayout.force('dagRadial',
+          ['radialin', 'radialout'].indexOf(state.dagMode) !== -1
+            ? d3ForceRadial(node => {
+                const nodeDepth = nodeDepths[node[state.nodeId]];
+                return (state.dagMode === 'radialin' ? maxDepth - nodeDepth : nodeDepth) * dagLevelDistance;
+              })
+              .strength(1)
+            : null
+        );
       } else {
         // ngraph
         const graph = ngraph.graph();
