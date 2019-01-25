@@ -129,6 +129,8 @@ export default Kapsule({
     linkCurvature: { default: 0, triggerUpdate: false }, // line curvature radius (0: straight, 1: semi-circle)
     linkCurveRotation: { default: 0, triggerUpdate: false }, // line curve rotation along the line axis (0: interection with XY plane, PI: upside down)
     linkMaterial: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
+    linkThreeObject: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
+    linkPositionUpdate: { triggerUpdate: false }, // custom function to call for updating the link's position. Signature: (threeObj, { start: { x, y, z},  end: { x, y, z }}, link). If the function returns a truthy value, the regular link position update will not run.
     linkDirectionalArrowLength: { default: 0, onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkDirectionalArrowColor: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkDirectionalArrowRelPos: { default: 0.5, triggerUpdate: false }, // value between 0<>1 indicating the relative pos along the (exposed) line
@@ -221,6 +223,15 @@ export default Kapsule({
 
           if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
+          if (state.linkPositionUpdate && state.linkPositionUpdate(
+              line,
+              { start: { x: start.x, y: start.y, z: start.z }, end: { x: end.x, y: end.y, z: end.z } },
+              link)
+          ) {
+            // exit if successfully custom updated position
+            return;
+          }
+
           link.__curve = null; // Wipe curve ref from object
 
           if (line.type === 'Line') { // Update line geometry
@@ -283,7 +294,7 @@ export default Kapsule({
             }
             line.geometry.computeBoundingSphere();
 
-          } else { // Update cylinder geometry
+          } else if (line.type === 'Mesh') { // Update cylinder geometry
             // links with width ignore linkCurvature because TubeGeometries can't be updated
 
             const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
@@ -484,6 +495,7 @@ export default Kapsule({
         state.graphScene.add(node.__threeObj = obj);
       });
 
+      const customLinkObjectAccessor = accessorFn(state.linkThreeObject);
       const customLinkMaterialAccessor = accessorFn(state.linkMaterial);
       const linkVisibilityAccessor = accessorFn(state.linkVisibility);
       const linkColorAccessor = accessorFn(state.linkColor);
@@ -505,48 +517,60 @@ export default Kapsule({
           return;
         }
 
-        // Add line
         const color = linkColorAccessor(link);
-        const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
 
-        const useCylinder = !!linkWidth;
+        const customObj = customLinkObjectAccessor(link);
+        let lineObj;
+        if (customObj) {
+          lineObj = customObj;
 
-        let geometry;
-        if (useCylinder) {
-          if (!cylinderGeometries.hasOwnProperty(linkWidth)) {
-            const r = linkWidth / 2;
-            geometry = new three.CylinderGeometry(r, r, 1, state.linkResolution, 1, false);
-            geometry.applyMatrix(new three.Matrix4().makeTranslation(0, 1 / 2, 0));
-            geometry.applyMatrix(new three.Matrix4().makeRotationX(Math.PI / 2));
-            cylinderGeometries[linkWidth] = geometry;
+          if (state.linkThreeObject === lineObj) {
+            // clone object if it's a shared object among all links
+            lineObj = lineObj.clone();
           }
-          geometry = cylinderGeometries[linkWidth];
-        } else { // Use plain line (constant width)
-          geometry = new three.BufferGeometry();
+        } else {
+          // Add default line object
+          const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
+
+          const useCylinder = !!linkWidth;
+
+          let geometry;
+          if (useCylinder) {
+            if (!cylinderGeometries.hasOwnProperty(linkWidth)) {
+              const r = linkWidth / 2;
+              geometry = new three.CylinderGeometry(r, r, 1, state.linkResolution, 1, false);
+              geometry.applyMatrix(new three.Matrix4().makeTranslation(0, 1 / 2, 0));
+              geometry.applyMatrix(new three.Matrix4().makeRotationX(Math.PI / 2));
+              cylinderGeometries[linkWidth] = geometry;
+            }
+            geometry = cylinderGeometries[linkWidth];
+          } else { // Use plain line (constant width)
+            geometry = new three.BufferGeometry();
+          }
+
+          let lineMaterial = customLinkMaterialAccessor(link);
+          if (!lineMaterial) {
+            if (!lineMaterials.hasOwnProperty(color)) {
+              const lineOpacity = state.linkOpacity * colorAlpha(color);
+              lineMaterials[color] = new three.MeshLambertMaterial({
+                color: colorStr2Hex(color || '#f0f0f0'),
+                transparent: lineOpacity < 1,
+                opacity: lineOpacity,
+                depthWrite: lineOpacity >= 1 // Prevent transparency issues
+              });
+            }
+            lineMaterial = lineMaterials[color];
+          }
+
+          lineObj = new three[useCylinder ? 'Mesh' : 'Line'](geometry, lineMaterial);
         }
 
-        let lineMaterial = customLinkMaterialAccessor(link);
-        if (!lineMaterial) {
-          if (!lineMaterials.hasOwnProperty(color)) {
-            const lineOpacity = state.linkOpacity * colorAlpha(color);
-            lineMaterials[color] = new three.MeshLambertMaterial({
-              color: colorStr2Hex(color || '#f0f0f0'),
-              transparent: lineOpacity < 1,
-              opacity: lineOpacity,
-              depthWrite: lineOpacity >= 1 // Prevent transparency issues
-            });
-          }
-          lineMaterial = lineMaterials[color];
-        }
+        lineObj.renderOrder = 10; // Prevent visual glitches of dark lines on top of nodes by rendering them last
 
-        const line = new three[useCylinder ? 'Mesh' : 'Line'](geometry, lineMaterial);
+        lineObj.__graphObjType = 'link'; // Add object type
+        lineObj.__data = link; // Attach link data
 
-        line.renderOrder = 10; // Prevent visual glitches of dark lines on top of nodes by rendering them last
-
-        line.__graphObjType = 'link'; // Add object type
-        line.__data = link; // Attach link data
-
-        state.graphScene.add(link.__lineObj = line);
+        state.graphScene.add(link.__lineObj = lineObj);
 
         // Add arrow
         const arrowLength = linkArrowLengthAccessor(link);
