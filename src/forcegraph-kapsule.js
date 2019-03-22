@@ -458,6 +458,7 @@ export default Kapsule({
       const customNodeObjectAccessor = accessorFn(state.nodeThreeObject);
       const valAccessor = accessorFn(state.nodeVal);
       const colorAccessor = accessorFn(state.nodeColor);
+      const opacityAccessor = accessorFn(state.nodeOpacity);
       const sphereGeometries = {}; // indexed by node value
       const sphereMaterials = {}; // indexed by color
       state.graphData.nodes.forEach(node => {
@@ -478,11 +479,12 @@ export default Kapsule({
           }
 
           const color = colorAccessor(node);
+          const opacity = opacityAccessor(node);
           if (!sphereMaterials.hasOwnProperty(color)) {
             sphereMaterials[color] = new three.MeshLambertMaterial({
               color: colorStr2Hex(color || '#ffffaa'),
               transparent: true,
-              opacity: state.nodeOpacity * colorAlpha(color)
+              opacity: opacity * colorAlpha(color)
             });
           }
 
@@ -499,6 +501,7 @@ export default Kapsule({
       const customLinkMaterialAccessor = accessorFn(state.linkMaterial);
       const linkVisibilityAccessor = accessorFn(state.linkVisibility);
       const linkColorAccessor = accessorFn(state.linkColor);
+      const linkOpacityAccessor = accessorFn(state.linkOpacity);
       const linkWidthAccessor = accessorFn(state.linkWidth);
       const linkArrowLengthAccessor = accessorFn(state.linkDirectionalArrowLength);
       const linkArrowColorAccessor = accessorFn(state.linkDirectionalArrowColor);
@@ -518,6 +521,7 @@ export default Kapsule({
         }
 
         const color = linkColorAccessor(link);
+        const opacity = linkOpacityAccessor(link);
 
         const customObj = customLinkObjectAccessor(link);
         let lineObj;
@@ -551,7 +555,7 @@ export default Kapsule({
           let lineMaterial = customLinkMaterialAccessor(link);
           if (!lineMaterial) {
             if (!lineMaterials.hasOwnProperty(color)) {
-              const lineOpacity = state.linkOpacity * colorAlpha(color);
+              const lineOpacity = opacity * colorAlpha(color);
               lineMaterials[color] = new three.MeshLambertMaterial({
                 color: colorStr2Hex(color || '#f0f0f0'),
                 transparent: lineOpacity < 1,
@@ -587,7 +591,7 @@ export default Kapsule({
             new three.MeshLambertMaterial({
               color: colorStr2Hex(arrowColor),
               transparent: true,
-              opacity: state.linkOpacity * 3
+              opacity: opacity * 3
             })
           );
 
@@ -608,7 +612,7 @@ export default Kapsule({
           particleMaterials[photonColor] = new three.MeshLambertMaterial({
             color: colorStr2Hex(photonColor),
             transparent: true,
-            opacity: state.linkOpacity * 3
+            opacity: opacity * 3
           });
         }
         const particleMaterial = particleMaterials[photonColor];
