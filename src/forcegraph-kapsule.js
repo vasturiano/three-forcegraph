@@ -509,7 +509,7 @@ export default Kapsule({
       const linkParticleWidthAccessor = accessorFn(state.linkDirectionalParticleWidth);
       const linkParticleColorAccessor = accessorFn(state.linkDirectionalParticleColor);
 
-      const lineMaterials = {}; // indexed by link color
+      const lineMaterials = {}; // indexed by link color + opacity
       const cylinderGeometries = {}; // indexed by link width
       const particleMaterials = {}; // indexed by link color
       const particleGeometries = {}; // indexed by particle width
@@ -554,16 +554,16 @@ export default Kapsule({
 
           let lineMaterial = customLinkMaterialAccessor(link);
           if (!lineMaterial) {
-            if (!lineMaterials.hasOwnProperty(color)) {
+            if (!lineMaterials.hasOwnProperty(color+opacity)) {
               const lineOpacity = opacity * colorAlpha(color);
-              lineMaterials[color] = new three.MeshLambertMaterial({
+              lineMaterials[color+opacity] = new three.MeshLambertMaterial({
                 color: colorStr2Hex(color || '#f0f0f0'),
                 transparent: lineOpacity < 1,
                 opacity: lineOpacity,
                 depthWrite: lineOpacity >= 1 // Prevent transparency issues
               });
             }
-            lineMaterial = lineMaterials[color];
+            lineMaterial = lineMaterials[color+opacity];
           }
 
           lineObj = new three[useCylinder ? 'Mesh' : 'Line'](geometry, lineMaterial);
