@@ -1904,10 +1904,10 @@ ngraph.forcelayout@^0.5.0:
     ngraph.events "0.0.4"
     ngraph.physics.simulator "^0.3.0"
 
-ngraph.graph@^0.0.15:
-  version "0.0.15"
-  resolved "https://registry.yarnpkg.com/ngraph.graph/-/ngraph.graph-0.0.15.tgz#c19c4d66152cb8283655aef41e0e1afd6ba80278"
-  integrity sha512-XOwLxddsB6a68WP2UKuLdyc3uceNGY3s3q93XJEuX2w87k0iLZDebq+jy35nmf9CnfDKB8J1E+rvLTfDNJ5MQQ==
+ngraph.graph@^0.0.18:
+  version "0.0.18"
+  resolved "https://registry.yarnpkg.com/ngraph.graph/-/ngraph.graph-0.0.18.tgz#1dc5409ae6e64f770c063d88e7fa582258792cb1"
+  integrity sha512-0Y9MkbhUadmnD9WU747ET1MBEiRMKAZ5UMavC6Zkae5fT8/ptat5bQDcM8cpdMInXyP2svQ+fxwt1L8dHYQwZw==
   dependencies:
     ngraph.events "0.0.3"
 

@@ -46,7 +46,7 @@
     "kapsule": "^1.9.2",
     "ngraph.forcelayout": "^0.5.0",
     "ngraph.forcelayout3d": "^0.0.16",
-    "ngraph.graph": "^0.0.15",
+    "ngraph.graph": "^0.0.18",
     "tinycolor2": "^1.4.1"
   },
   "peerDependencies": {
