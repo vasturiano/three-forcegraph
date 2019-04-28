@@ -108,7 +108,10 @@ export default Kapsule({
         }
       }
     },
-    dagMode: { onChange(_, state) { state.simulationNeedsReheating = true } }, // td, bu, lr, rl, zin, zout, radialin, radialout
+    dagMode: { onChange(dagMode, state) { // td, bu, lr, rl, zin, zout, radialin, radialout
+      !dagMode && state.forceEngine === 'd3' && (state.graphData.nodes || []).forEach(n => n.fx = n.fy = n.fz = undefined); // unfix nodes when disabling dag mode
+      state.simulationNeedsReheating = true;
+    }},
     dagLevelDistance: { onChange(_, state) { state.simulationNeedsReheating = true } },
     nodeRelSize: { default: 4, onChange(_, state) { state.sceneNeedsRepopulating = true } }, // volume per val unit
     nodeId: { default: 'id', onChange(_, state) { state.simulationNeedsReheating = true } },
