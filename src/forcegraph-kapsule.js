@@ -307,8 +307,11 @@ export default Kapsule({
             line.position.x = vStart.x;
             line.position.y = vStart.y;
             line.position.z = vStart.z;
-            line.lookAt(vEnd);
+
             line.scale.z = distance;
+
+            line.parent.localToWorld(vEnd); // lookAt requires world coords
+            line.lookAt(vEnd);
           }
         });
       }
@@ -359,7 +362,10 @@ export default Kapsule({
           const arrowTail = getPosAlongLine((posAlongLine - arrowLength) / lineLen);
 
           ['x', 'y', 'z'].forEach(dim => arrowObj.position[dim] = arrowTail[dim]);
-          arrowObj.lookAt(arrowHead.x, arrowHead.y, arrowHead.z);
+
+          const headVec = new THREE.Vector3(...['x', 'y', 'z'].map(c => arrowHead[c]));
+          arrowObj.parent.localToWorld(headVec); // lookAt requires world coords
+          arrowObj.lookAt(headVec);
         });
       }
 
