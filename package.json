@@ -1,6 +1,6 @@
 {
   "name": "three-forcegraph",
-  "version": "1.18.2",
+  "version": "1.18.3",
   "description": "Force-directed graph as a ThreeJS 3d object",
   "unpkg": "dist/three-forcegraph.min.js",
   "main": "dist/three-forcegraph.common.js",
