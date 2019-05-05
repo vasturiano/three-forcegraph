@@ -369,7 +369,7 @@ export default Kapsule({
 
           ['x', 'y', 'z'].forEach(dim => arrowObj.position[dim] = arrowTail[dim]);
 
-          const headVec = new THREE.Vector3(...['x', 'y', 'z'].map(c => arrowHead[c]));
+          const headVec = new three.Vector3(...['x', 'y', 'z'].map(c => arrowHead[c]));
           arrowObj.parent.localToWorld(headVec); // lookAt requires world coords
           arrowObj.lookAt(headVec);
         });
