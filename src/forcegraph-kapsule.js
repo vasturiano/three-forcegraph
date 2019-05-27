@@ -222,6 +222,7 @@ export default Kapsule({
         // Update links position
         const linkCurvatureAccessor = accessorFn(state.linkCurvature);
         const linkCurveRotationAccessor = accessorFn(state.linkCurveRotation);
+        const linkThreeObjectExtendAccessor = accessorFn(state.linkThreeObjectExtend);
         state.graphData.links.forEach(link => {
           const line = link.__lineObj;
           if (!line) return;
@@ -235,7 +236,7 @@ export default Kapsule({
           if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
           if (state.linkPositionUpdate && state.linkPositionUpdate(
-              line,
+              linkThreeObjectExtendAccessor(link) ? line.children[0] : line, // pass child custom object if extending the default
               { start: { x: start.x, y: start.y, z: start.z }, end: { x: end.x, y: end.y, z: end.z } },
               link)
           ) {
