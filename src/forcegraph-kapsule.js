@@ -121,6 +121,7 @@ export default Kapsule({
     nodeAutoColorBy: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
     nodeOpacity: { default: 0.75, onChange(_, state) { state.sceneNeedsRepopulating = true } },
     nodeThreeObject: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
+    nodeThreeObjectExtend: { default: false, onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkSource: { default: 'source', onChange(_, state) { state.simulationNeedsReheating = true } },
     linkTarget: { default: 'target', onChange(_, state) { state.simulationNeedsReheating = true } },
     linkVisibility: { default: true, onChange(_, state) { state.sceneNeedsRepopulating = true } },
@@ -133,6 +134,7 @@ export default Kapsule({
     linkCurveRotation: { default: 0, triggerUpdate: false }, // line curve rotation along the line axis (0: interection with XY plane, PI: upside down)
     linkMaterial: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkThreeObject: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
+    linkThreeObjectExtend: { default: false, onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkPositionUpdate: { triggerUpdate: false }, // custom function to call for updating the link's position. Signature: (threeObj, { start: { x, y, z},  end: { x, y, z }}, link). If the function returns a truthy value, the regular link position update will not run.
     linkDirectionalArrowLength: { default: 0, onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkDirectionalArrowColor: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
@@ -471,22 +473,24 @@ export default Kapsule({
 
       // Add WebGL objects
       const customNodeObjectAccessor = accessorFn(state.nodeThreeObject);
+      const customNodeObjectExtendAccessor = accessorFn(state.nodeThreeObjectExtend);
       const valAccessor = accessorFn(state.nodeVal);
       const colorAccessor = accessorFn(state.nodeColor);
       const sphereGeometries = {}; // indexed by node value
       const sphereMaterials = {}; // indexed by color
       state.graphData.nodes.forEach(node => {
-        const customObj = customNodeObjectAccessor(node);
+        let customObj = customNodeObjectAccessor(node);
+        const extendObj = customNodeObjectExtendAccessor(node);
+
+        if (customObj && state.nodeThreeObject === customObj) {
+          // clone object if it's a shared object among all nodes
+          customObj = customObj.clone();
+        }
 
         let obj;
-        if (customObj) {
+        if (customObj && !extendObj) {
           obj = customObj;
-
-          if (state.nodeThreeObject === obj) {
-            // clone object if it's a shared object among all nodes
-            obj = obj.clone();
-          }
-        } else { // Default object (sphere mesh)
+        } else { // Add default object (sphere mesh)
           const val = valAccessor(node) || 1;
           if (!sphereGeometries.hasOwnProperty(val)) {
             sphereGeometries[val] = new three.SphereGeometry(Math.cbrt(val) * state.nodeRelSize, state.nodeResolution, state.nodeResolution);
@@ -502,6 +506,10 @@ export default Kapsule({
           }
 
           obj = new three.Mesh(sphereGeometries[val], sphereMaterials[color]);
+
+          if (customObj && extendObj) {
+            obj.add(customObj); // extend default with custom
+          }
         }
 
         obj.__graphObjType = 'node'; // Add object type
@@ -511,6 +519,7 @@ export default Kapsule({
       });
 
       const customLinkObjectAccessor = accessorFn(state.linkThreeObject);
+      const customLinkObjectExtendAccessor = accessorFn(state.linkThreeObjectExtend);
       const customLinkMaterialAccessor = accessorFn(state.linkMaterial);
       const linkVisibilityAccessor = accessorFn(state.linkVisibility);
       const linkColorAccessor = accessorFn(state.linkColor);
@@ -534,15 +543,17 @@ export default Kapsule({
 
         const color = linkColorAccessor(link);
 
-        const customObj = customLinkObjectAccessor(link);
-        let lineObj;
-        if (customObj) {
-          lineObj = customObj;
+        let customObj = customLinkObjectAccessor(link);
+        const extendObj = customLinkObjectExtendAccessor(link);
 
-          if (state.linkThreeObject === lineObj) {
-            // clone object if it's a shared object among all links
-            lineObj = lineObj.clone();
-          }
+        if (customObj && state.linkThreeObject === customObj) {
+          // clone object if it's a shared object among all links
+          customObj = customObj.clone();
+        }
+
+        let lineObj;
+        if (customObj && !extendObj) {
+          lineObj = customObj;
         } else {
           // Add default line object
           const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
@@ -579,6 +590,10 @@ export default Kapsule({
           }
 
           lineObj = new three[useCylinder ? 'Mesh' : 'Line'](geometry, lineMaterial);
+
+          if (customObj && extendObj) {
+            lineObj.add(customObj); // extend default with custom
+          }
         }
 
         lineObj.renderOrder = 10; // Prevent visual glitches of dark lines on top of nodes by rendering them last
