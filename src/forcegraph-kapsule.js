@@ -235,12 +235,13 @@ export default Kapsule({
 
           if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
+          const extendedObj = linkThreeObjectExtendAccessor(link);
           if (state.linkPositionUpdate && state.linkPositionUpdate(
-              linkThreeObjectExtendAccessor(link) ? line.children[0] : line, // pass child custom object if extending the default
+              extendedObj ? line.children[0] : line, // pass child custom object if extending the default
               { start: { x: start.x, y: start.y, z: start.z }, end: { x: end.x, y: end.y, z: end.z } },
               link)
-          ) {
-            // exit if successfully custom updated position
+          && !extendedObj) {
+            // exit if successfully custom updated position of non-extended obj
             return;
           }
 
