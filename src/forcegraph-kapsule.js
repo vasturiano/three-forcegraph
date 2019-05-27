@@ -158,10 +158,6 @@ export default Kapsule({
     onEngineStop: { default: () => {}, triggerUpdate: false }
   },
 
-  aliases: {
-    autoColorBy: 'nodeAutoColorBy'
-  },
-
   methods: {
     refresh: function(state) {
       state.sceneNeedsRepopulating = true;
