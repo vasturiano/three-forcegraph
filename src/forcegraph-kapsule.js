@@ -5,9 +5,9 @@ import {
   BufferAttribute,
   Matrix4,
   Vector3,
-  SphereGeometry,
-  CylinderGeometry,
-  ConeGeometry,
+  SphereBufferGeometry,
+  CylinderBufferGeometry,
+  ConeBufferGeometry,
   Line,
   LineBasicMaterial,
   QuadraticBezierCurve3,
@@ -23,9 +23,9 @@ const three = window.THREE
     BufferAttribute,
     Matrix4,
     Vector3,
-    SphereGeometry,
-    CylinderGeometry,
-    ConeGeometry,
+    SphereBufferGeometry,
+    CylinderBufferGeometry,
+    ConeBufferGeometry,
     Line,
     LineBasicMaterial,
     QuadraticBezierCurve3,
@@ -491,7 +491,7 @@ export default Kapsule({
         } else { // Add default object (sphere mesh)
           const val = valAccessor(node) || 1;
           if (!sphereGeometries.hasOwnProperty(val)) {
-            sphereGeometries[val] = new three.SphereGeometry(Math.cbrt(val) * state.nodeRelSize, state.nodeResolution, state.nodeResolution);
+            sphereGeometries[val] = new three.SphereBufferGeometry(Math.cbrt(val) * state.nodeRelSize, state.nodeResolution, state.nodeResolution);
           }
 
           const color = colorAccessor(node);
@@ -562,7 +562,7 @@ export default Kapsule({
           if (useCylinder) {
             if (!cylinderGeometries.hasOwnProperty(linkWidth)) {
               const r = linkWidth / 2;
-              geometry = new three.CylinderGeometry(r, r, 1, state.linkResolution, 1, false);
+              geometry = new three.CylinderBufferGeometry(r, r, 1, state.linkResolution, 1, false);
               geometry.applyMatrix(new three.Matrix4().makeTranslation(0, 1 / 2, 0));
               geometry.applyMatrix(new three.Matrix4().makeRotationX(Math.PI / 2));
               cylinderGeometries[linkWidth] = geometry;
@@ -606,7 +606,7 @@ export default Kapsule({
         if (arrowLength && arrowLength > 0) {
           const arrowColor = linkArrowColorAccessor(link) || color || '#f0f0f0';
 
-          const coneGeometry = new three.ConeGeometry(arrowLength * 0.25, arrowLength, state.linkDirectionalArrowResolution);
+          const coneGeometry = new three.ConeBufferGeometry(arrowLength * 0.25, arrowLength, state.linkDirectionalArrowResolution);
           // Correct orientation
           coneGeometry.translate(0, arrowLength / 2, 0);
           coneGeometry.rotateX(Math.PI / 2);
@@ -629,7 +629,7 @@ export default Kapsule({
         const photonColor = linkParticleColorAccessor(link) || color || '#f0f0f0';
 
         if (!particleGeometries.hasOwnProperty(photonR)) {
-          particleGeometries[photonR] = new three.SphereGeometry(photonR, state.linkDirectionalParticleResolution, state.linkDirectionalParticleResolution);
+          particleGeometries[photonR] = new three.SphereBufferGeometry(photonR, state.linkDirectionalParticleResolution, state.linkDirectionalParticleResolution);
         }
         const particleGeometry = particleGeometries[photonR];
 
