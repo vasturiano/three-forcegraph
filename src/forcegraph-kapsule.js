@@ -231,6 +231,8 @@ export default Kapsule({
 
           if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
+          calcLinkCurve(link); // calculate link curve for all links, including custom replaced, so it can be used in directional functionality
+
           const extendedObj = linkThreeObjectExtendAccessor(link);
           if (state.linkPositionUpdate && state.linkPositionUpdate(
               extendedObj ? line.children[0] : line, // pass child custom object if extending the default
@@ -241,13 +243,11 @@ export default Kapsule({
             return;
           }
 
-          link.__curve = null; // Wipe curve ref from object
-
           if (line.type === 'Line') { // Update line geometry
-            const curvature = linkCurvatureAccessor(link);
             const curveResolution = 30; // # line segments
+            const curve = link.__curve;
 
-            if (!curvature) {
+            if (!curve) { // straight line
               let linePos = line.geometry.getAttribute('position');
               if (!linePos || !linePos.array || linePos.array.length !== 6) {
                 line.geometry.addAttribute('position', linePos = new three.BufferAttribute(new Float32Array(2 * 3), 3));
@@ -263,48 +263,13 @@ export default Kapsule({
               linePos.needsUpdate = true;
 
             } else { // bezier curve line
-              const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
-              const vEnd= new three.Vector3(end.x, end.y || 0, end.z || 0);
-
-              const l = vStart.distanceTo(vEnd); // line length
-
-              let curve;
-              const curveRotation = linkCurveRotationAccessor(link);
-
-              if (l > 0) {
-                const dx = end.x - start.x;
-                const dy = end.y - start.y || 0;
-
-                const vLine = new three.Vector3()
-                  .subVectors(vEnd, vStart);
-
-                const cp = vLine.clone()
-                  .multiplyScalar(curvature)
-                  .cross((dx !== 0 || dy !== 0) ? new three.Vector3(0, 0, 1) : new three.Vector3(0, 1, 0)) // avoid cross-product of parallel vectors (prefer Z, fallback to Y)
-                  .applyAxisAngle(vLine.normalize(), curveRotation) // rotate along line axis according to linkCurveRotation
-                  .add((new three.Vector3()).addVectors(vStart, vEnd).divideScalar(2));
-
-                curve = new three.QuadraticBezierCurve3(vStart, cp, vEnd);
-              } else { // Same point, draw a loop
-                const d = curvature * 70;
-                const endAngle = -curveRotation; // Rotate clockwise (from Z angle perspective)
-                const startAngle = endAngle + Math.PI / 2;
-
-                curve = new three.CubicBezierCurve3(
-                  vStart,
-                  new three.Vector3(d * Math.cos(startAngle), d * Math.sin(startAngle), 0).add(vStart),
-                  new three.Vector3(d * Math.cos(endAngle), d * Math.sin(endAngle), 0).add(vStart),
-                  vEnd
-                );
-              }
-
               line.geometry.setFromPoints(curve.getPoints(curveResolution));
-              link.__curve = curve;
             }
             line.geometry.computeBoundingSphere();
 
           } else if (line.type === 'Mesh') { // Update cylinder geometry
             // links with width ignore linkCurvature because TubeGeometries can't be updated
+            link.__curve = null; // force reset link curve
 
             const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
             const vEnd = new three.Vector3(end.x, end.y || 0, end.z || 0);
@@ -320,6 +285,62 @@ export default Kapsule({
             line.lookAt(vEnd);
           }
         });
+
+        //
+
+        function calcLinkCurve(link) {
+          const pos = isD3Sim
+            ? link
+            : state.layout.getLinkPosition(state.layout.graph.getLink(link.source, link.target).id);
+          const start = pos[isD3Sim ? 'source' : 'from'];
+          const end = pos[isD3Sim ? 'target' : 'to'];
+
+          if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
+
+          const curvature = linkCurvatureAccessor(link);
+
+          if (!curvature) {
+            link.__curve = null; // Straight line
+
+          } else { // bezier curve line (only for line types)
+            const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
+            const vEnd= new three.Vector3(end.x, end.y || 0, end.z || 0);
+
+            const l = vStart.distanceTo(vEnd); // line length
+
+            let curve;
+            const curveRotation = linkCurveRotationAccessor(link);
+
+            if (l > 0) {
+              const dx = end.x - start.x;
+              const dy = end.y - start.y || 0;
+
+              const vLine = new three.Vector3()
+                .subVectors(vEnd, vStart);
+
+              const cp = vLine.clone()
+                .multiplyScalar(curvature)
+                .cross((dx !== 0 || dy !== 0) ? new three.Vector3(0, 0, 1) : new three.Vector3(0, 1, 0)) // avoid cross-product of parallel vectors (prefer Z, fallback to Y)
+                .applyAxisAngle(vLine.normalize(), curveRotation) // rotate along line axis according to linkCurveRotation
+                .add((new three.Vector3()).addVectors(vStart, vEnd).divideScalar(2));
+
+              curve = new three.QuadraticBezierCurve3(vStart, cp, vEnd);
+            } else { // Same point, draw a loop
+              const d = curvature * 70;
+              const endAngle = -curveRotation; // Rotate clockwise (from Z angle perspective)
+              const startAngle = endAngle + Math.PI / 2;
+
+              curve = new three.CubicBezierCurve3(
+                vStart,
+                new three.Vector3(d * Math.cos(startAngle), d * Math.sin(startAngle), 0).add(vStart),
+                new three.Vector3(d * Math.cos(endAngle), d * Math.sin(endAngle), 0).add(vStart),
+                vEnd
+              );
+            }
+
+            link.__curve = curve;
+          }
+        }
       }
 
       function updateArrows() {
