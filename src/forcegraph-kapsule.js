@@ -507,8 +507,12 @@ export default Kapsule({
         }
 
         let obj;
-        if (customObj && !extendObj) {
-          obj = customObj;
+        if (!extendObj) {
+          if (customObj) {
+            obj = customObj;
+          } else {
+            return
+          }
         } else { // Add default object (sphere mesh)
           const val = valAccessor(node) || 1;
           if (!sphereGeometries.hasOwnProperty(val)) {
@@ -571,8 +575,12 @@ export default Kapsule({
         }
 
         let lineObj;
-        if (customObj && !extendObj) {
-          lineObj = customObj;
+        if (!extendObj) {
+          if (customObj) {
+            lineObj = customObj;
+          } else {
+            return
+          }
         } else {
           // Add default line object
           const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
