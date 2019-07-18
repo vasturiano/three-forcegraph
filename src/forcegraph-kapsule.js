@@ -120,6 +120,7 @@ export default Kapsule({
     nodeColor: { default: 'color', onChange(_, state) { state.sceneNeedsRepopulating = true } },
     nodeAutoColorBy: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
     nodeOpacity: { default: 0.75, onChange(_, state) { state.sceneNeedsRepopulating = true } },
+    nodeVisibility: { default: true, onChange(_, state) { state.sceneNeedsRepopulating = true } },
     nodeThreeObject: { onChange(_, state) { state.sceneNeedsRepopulating = true } },
     nodeThreeObjectExtend: { default: false, onChange(_, state) { state.sceneNeedsRepopulating = true } },
     linkSource: { default: 'source', onChange(_, state) { state.simulationNeedsReheating = true } },
@@ -495,9 +496,16 @@ export default Kapsule({
       const customNodeObjectExtendAccessor = accessorFn(state.nodeThreeObjectExtend);
       const valAccessor = accessorFn(state.nodeVal);
       const colorAccessor = accessorFn(state.nodeColor);
+      const visibilityAccessor = accessorFn(state.nodeVisibility);
       const sphereGeometries = {}; // indexed by node value
       const sphereMaterials = {}; // indexed by color
       state.graphData.nodes.forEach(node => {
+        if (!visibilityAccessor(node)) {
+          // Exclude non-visible nodes
+          node.__threeObj = null;
+          return;
+        }
+
         let customObj = customNodeObjectAccessor(node);
         const extendObj = customNodeObjectExtendAccessor(node);
 
