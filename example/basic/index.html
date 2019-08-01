@@ -38,10 +38,11 @@
 
     // Setup camera
     const camera = new THREE.PerspectiveCamera();
+    camera.far = 10000;
     camera.aspect = window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
     camera.lookAt(Graph.position);
-    camera.position.z = Math.cbrt(N) * 100;
+    camera.position.z = Math.cbrt(N) * 320;
 
     // Add camera controls
     const tbControls = new TrackballControls(camera, renderer.domElement);
