@@ -42,7 +42,7 @@
     camera.aspect = window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
     camera.lookAt(Graph.position);
-    camera.position.z = Math.cbrt(N) * 320;
+    camera.position.z = Math.cbrt(N) * 180;
 
     // Add camera controls
     const tbControls = new TrackballControls(camera, renderer.domElement);
