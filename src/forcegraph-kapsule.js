@@ -51,10 +51,10 @@ const ngraph = { graph, forcelayout, forcelayout3d };
 
 import Kapsule from 'kapsule';
 import accessorFn from 'accessor-fn';
-import threeDigest from './three-digest';
 
-import { autoColorObjects, colorStr2Hex, colorAlpha } from './color-utils';
-import getDagDepths from './dagDepths';
+import threeDigest from './utils/three-digest';
+import { autoColorObjects, colorStr2Hex, colorAlpha } from './utils/color-utils';
+import getDagDepths from './utils/dagDepths';
 
 //
 
