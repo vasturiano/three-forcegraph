@@ -161,7 +161,7 @@ export default Kapsule({
 
   methods: {
     refresh: function(state) {
-      state.hardRefresh = true;
+      state._flushObjects = true;
       state._rerender();
       return this;
     },
@@ -467,7 +467,7 @@ export default Kapsule({
     }
 
     // Digest nodes WebGL objects
-    if (state.hardRefresh || hasAnyPropChanged([
+    if (state._flushObjects || hasAnyPropChanged([
       'graphData',
       'nodeThreeObject',
       'nodeThreeObjectExtend',
@@ -493,7 +493,7 @@ export default Kapsule({
         state.graphData.nodes.filter(visibilityAccessor),
         state.graphScene,
         {
-          purge: state.hardRefresh || hasAnyPropChanged([
+          purge: state._flushObjects || hasAnyPropChanged([
             // recreate objects if any of these props have changed
             'nodeThreeObject',
             'nodeThreeObjectExtend'
@@ -569,7 +569,7 @@ export default Kapsule({
     }
 
     // Digest links WebGL objects
-    if (state.hardRefresh || hasAnyPropChanged([
+    if (state._flushObjects || hasAnyPropChanged([
       'graphData',
       'linkThreeObject',
       'linkThreeObjectExtend',
@@ -606,7 +606,7 @@ export default Kapsule({
         state.graphScene,
         {
           objBindAttr: '__lineObj',
-          purge: state.hardRefresh || hasAnyPropChanged([
+          purge: state._flushObjects || hasAnyPropChanged([
             // recreate objects if any of these props have changed
             'linkThreeObject',
             'linkThreeObjectExtend',
@@ -832,8 +832,10 @@ export default Kapsule({
       }
     }
 
+    state._flushObjects = false; // reset objects refresh flag
+
     // simulation engine
-    if (state.hardRefresh || hasAnyPropChanged([
+    if (hasAnyPropChanged([
       'graphData',
       'nodeId',
       'linkSource',
@@ -921,8 +923,6 @@ export default Kapsule({
     }
 
     state.engineRunning = true; // resume simulation
-
-    state.hardRefresh = false; // reset refresh cycle
 
     state.onFinishLoading();
   }

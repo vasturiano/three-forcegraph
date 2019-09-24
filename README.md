@@ -94,7 +94,7 @@ myGraph.tickFrame();
 | <b>onFinishLoading</b>(<i>fn</i>) | Callback function for notification that the component has finished loading data and iterating through the warmup phase, and the simulation engine has been resumed. | - |
 | <b>tickFrame()</b> | This method should be called on each cycle of the global renderer to iterate the underlying force simulation engine and update the nodes/links objects' positions. ||
 | <b>resetProps()</b> | Reset all object properties to their default value. ||
-| <b>refresh</b>() | Redraws all the nodes/links and reheats the force simulation engine. |
+| <b>refresh</b>() | Redraws all the nodes/links. |
 
 ### Input JSON syntax
 
