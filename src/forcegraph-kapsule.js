@@ -176,6 +176,10 @@ export default Kapsule({
       state.d3ForceLayout.force(forceName, forceFn); // Force setter
       return this;
     },
+    d3ReheatSimulation: function(state) {
+      state.d3ForceLayout.alpha(1);
+      return this;
+    },
     _updateScene: function(state) {
 
     },
