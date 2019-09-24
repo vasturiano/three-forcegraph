@@ -180,9 +180,6 @@ export default Kapsule({
       state.d3ForceLayout.alpha(1);
       return this;
     },
-    _updateScene: function(state) {
-
-    },
     // reset cooldown state
     resetCountdown: function(state) {
       state.cntTicks = 0;
