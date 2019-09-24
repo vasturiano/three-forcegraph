@@ -978,10 +978,10 @@ d3-timer@1:
   resolved "https://registry.yarnpkg.com/d3-timer/-/d3-timer-1.0.9.tgz#f7bb8c0d597d792ff7131e1c24a36dd471a471ba"
   integrity sha512-rT34J5HnQUHhcLvhSB9GjCkN0Ddd5Y8nCwDBG2u6wQEeYxT/Lf51fTFFkldeib/sE/J0clIe0pnCfs6g/lRbyg==
 
-data-joint@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/data-joint/-/data-joint-1.2.0.tgz#fcc6ca284d90699bf5ef73409d138749c61189c1"
-  integrity sha512-0qgYUqx+spPEHXuO5RFJqT1iCcGFTTT9utjprq7o8kkglBSANV7+R+BqGAzNkcmYMPc3uaZypLjUFdASIeeXlQ==
+data-joint@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/data-joint/-/data-joint-1.2.1.tgz#b624ff28bf71388c5a40cc03fdef4d27b12e6bf3"
+  integrity sha512-b+PfObWOlt+R/FHd0zADUOyQw1NNGzlTe/e5YhiWtdSF+ytMMIYO/DI2FLYmZZohlvXDdD/ECF3x68YZHi+dTQ==
   dependencies:
     index-array-by "^1.2.6"
 
