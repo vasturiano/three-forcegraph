@@ -72,6 +72,7 @@ export default Kapsule({
 
           fetch(jsonUrl).then(r => r.json()).then(json => {
             state.fetchingJson = false;
+            state.onFinishLoading(json);
             this.graphData(json);
           });
         }
@@ -155,6 +156,8 @@ export default Kapsule({
     cooldownTime: { default: 15000, triggerUpdate: false }, // ms
     onLoading: { default: () => {}, triggerUpdate: false },
     onFinishLoading: { default: () => {}, triggerUpdate: false },
+    onUpdate: { default: () => {}, triggerUpdate: false },
+    onFinishUpdate: { default: () => {}, triggerUpdate: false },
     onEngineTick: { default: () => {}, triggerUpdate: false },
     onEngineStop: { default: () => {}, triggerUpdate: false }
   },
@@ -456,6 +459,7 @@ export default Kapsule({
     const hasAnyPropChanged = propList => propList.some(p => changedProps.hasOwnProperty(p));
 
     state.engineRunning = false; // pause simulation
+    state.onUpdate();
 
     if (state.nodeAutoColorBy !== null && hasAnyPropChanged(['nodeAutoColorBy', 'graphData', 'nodeColor'])) {
       // Auto add color to uncolored nodes
@@ -924,6 +928,6 @@ export default Kapsule({
 
     state.engineRunning = true; // resume simulation
 
-    state.onFinishLoading();
+    state.onFinishUpdate();
   }
 });

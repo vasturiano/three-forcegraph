@@ -90,11 +90,13 @@ myGraph.tickFrame();
 | <b>cooldownTime</b>([<i>num</i>]) | Getter/setter for how long (ms) to render for before stopping and freezing the layout engine. | 15000 |
 | <b>onEngineTick</b>(<i>fn</i>) | Callback function invoked at every tick of the simulation engine. | - |
 | <b>onEngineStop</b>(<i>fn</i>) | Callback function invoked when the simulation engine stops and the layout is frozen. | - |
-| <b>onLoading</b>(<i>fn</i>) | Callback function for notification that data is being loaded, and the simulation engine is temporarily paused. | - |
-| <b>onFinishLoading</b>(<i>fn</i>) | Callback function for notification that the component has finished loading data and iterating through the warmup phase, and the simulation engine has been resumed. | - |
+| <b>onLoading</b>(<i>fn</i>) | Callback function for notification that data is being loaded asynchronously based on `jsonUrl`. | - |
+| <b>onFinishLoading</b>(<i>fn</i>) | Callback function for notification that the component has finished loading data asynchronously. | - |
+| <b>onUpdate</b>(<i>fn</i>) | Callback function for notification that the component has started updating and the simulation engine is temporarily paused. | - |
+| <b>onFinishUpdate</b>(<i>fn</i>) | Callback function for notification that the component has finished updating, done iterating through the warmup phase (if needed) and the simulation engine has been resumed. | - |
 | <b>tickFrame()</b> | This method should be called on each cycle of the global renderer to iterate the underlying force simulation engine and update the nodes/links objects' positions. ||
 | <b>resetProps()</b> | Reset all object properties to their default value. ||
-| <b>refresh</b>() | Redraws all the nodes/links. |
+| <b>refresh</b>() | Redraws all the nodes/links. ||
 
 ### Input JSON syntax
 
