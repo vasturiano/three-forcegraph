@@ -9,6 +9,7 @@ import {
   Vector3,
   SphereBufferGeometry,
   CylinderBufferGeometry,
+  TubeBufferGeometry,
   ConeBufferGeometry,
   Line,
   LineBasicMaterial,
@@ -29,6 +30,7 @@ const three = window.THREE
     Vector3,
     SphereBufferGeometry,
     CylinderBufferGeometry,
+    TubeBufferGeometry,
     ConeBufferGeometry,
     Line,
     LineBasicMaterial,
@@ -220,6 +222,7 @@ export default Kapsule({
         });
 
         // Update links position
+        const linkWidthAccessor = accessorFn(state.linkWidth);
         const linkCurvatureAccessor = accessorFn(state.linkCurvature);
         const linkCurveRotationAccessor = accessorFn(state.linkCurveRotation);
         const linkThreeObjectExtendAccessor = accessorFn(state.linkThreeObjectExtend);
@@ -247,10 +250,10 @@ export default Kapsule({
             return;
           }
 
-          if (line.type === 'Line') { // Update line geometry
-            const curveResolution = 30; // # line segments
-            const curve = link.__curve;
+          const curveResolution = 30; // # line segments
+          const curve = link.__curve;
 
+          if (line.type === 'Line') { // Update line geometry
             if (!curve) { // straight line
               let linePos = line.geometry.getAttribute('position');
               if (!linePos || !linePos.array || linePos.array.length !== 6) {
@@ -272,21 +275,48 @@ export default Kapsule({
             line.geometry.computeBoundingSphere();
 
           } else if (line.type === 'Mesh') { // Update cylinder geometry
-            // links with width ignore linkCurvature because TubeGeometries can't be updated
-            link.__curve = null; // force reset link curve
 
-            const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
-            const vEnd = new three.Vector3(end.x, end.y || 0, end.z || 0);
-            const distance = vStart.distanceTo(vEnd);
+            if (!curve) { // straight tube
+              if (line.geometry.type !== 'CylinderBufferGeometry') {
+                const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
+                const r = linkWidth / 2;
 
-            line.position.x = vStart.x;
-            line.position.y = vStart.y;
-            line.position.z = vStart.z;
+                const geometry = new three.CylinderBufferGeometry(r, r, 1, state.linkResolution, 1, false);
+                geometry.applyMatrix(new three.Matrix4().makeTranslation(0, 1 / 2, 0));
+                geometry.applyMatrix(new three.Matrix4().makeRotationX(Math.PI / 2));
 
-            line.scale.z = distance;
+                line.geometry.dispose();
+                line.geometry = geometry;
+              }
 
-            line.parent.localToWorld(vEnd); // lookAt requires world coords
-            line.lookAt(vEnd);
+              const vStart = new three.Vector3(start.x, start.y || 0, start.z || 0);
+              const vEnd = new three.Vector3(end.x, end.y || 0, end.z || 0);
+              const distance = vStart.distanceTo(vEnd);
+
+              line.position.x = vStart.x;
+              line.position.y = vStart.y;
+              line.position.z = vStart.z;
+
+              line.scale.z = distance;
+
+              line.parent.localToWorld(vEnd); // lookAt requires world coords
+              line.lookAt(vEnd);
+            } else { // curved tube
+              if (line.geometry.type !== 'TubeBufferGeometry') {
+                // reset object positioning
+                line.position.set(0, 0, 0);
+                line.rotation.set(0, 0, 0);
+                line.scale.set(1, 1, 1);
+              }
+
+              const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
+              const r = linkWidth / 2;
+
+              const geometry = new three.TubeBufferGeometry(curve, curveResolution, r, state.linkResolution, false);
+
+              line.geometry.dispose();
+              line.geometry = geometry;
+            }
           }
         });
 
