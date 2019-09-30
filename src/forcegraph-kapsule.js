@@ -55,6 +55,7 @@ import Kapsule from 'kapsule';
 import accessorFn from 'accessor-fn';
 
 import threeDigest from './utils/three-digest';
+import { emptyObject } from './utils/three-gc';
 import { autoColorObjects, colorStr2Hex, colorAlpha } from './utils/color-utils';
 import getDagDepths from './utils/dagDepths';
 
@@ -434,8 +435,10 @@ export default Kapsule({
         // update link particle positions
         const particleSpeedAccessor = accessorFn(state.linkDirectionalParticleSpeed);
         state.graphData.links.forEach(link => {
-          const photons = link.__photonsObj && link.__photonsObj.children;
-          if (!photons || !photons.length) return;
+          const cyclePhotons = link.__photonsObj && link.__photonsObj.children;
+          const singleHopPhotons = link.__singleHopPhotonsObj && link.__singleHopPhotonsObj.children;
+
+          if ((!singleHopPhotons || !singleHopPhotons.length) && (!cyclePhotons || !cyclePhotons.length)) return;
 
           const pos = isD3Sim
             ? link
@@ -459,15 +462,67 @@ export default Kapsule({
               }
             };
 
+          const photons = [...(cyclePhotons || []), ...(singleHopPhotons || []),];
+
           photons.forEach((photon, idx) => {
-            const photonPosRatio = photon.__progressRatio =
-              ((photon.__progressRatio || (idx / photons.length)) + particleSpeed) % 1;
+            const singleHop = photon.parent.__linkThreeObjType === 'singleHopPhotons';
+
+            if (!photon.hasOwnProperty('__progressRatio')) {
+              photon.__progressRatio = singleHop ? 0 : (idx / cyclePhotons.length);
+            }
+
+            photon.__progressRatio += particleSpeed;
+
+            if (photon.__progressRatio >=1) {
+              if (!singleHop) {
+                photon.__progressRatio = photon.__progressRatio % 1;
+              } else {
+                // remove particle
+                photon.parent.remove(photon);
+                emptyObject(photon);
+                return;
+              }
+            }
+
+            const photonPosRatio = photon.__progressRatio;
 
             const pos = getPhotonPos(photonPosRatio);
             ['x', 'y', 'z'].forEach(dim => photon.position[dim] = pos[dim]);
           });
         });
       }
+    },
+    emitParticle: function(state, link) {
+      if (link) {
+        if (!link.__singleHopPhotonsObj) {
+          const obj = new three.Group();
+          obj.__linkThreeObjType = 'singleHopPhotons';
+          link.__singleHopPhotonsObj = obj;
+
+          state.graphScene.add(obj);
+        }
+
+        const particleWidthAccessor = accessorFn(state.linkDirectionalParticleWidth);
+        const photonR = Math.ceil(particleWidthAccessor(link) * 10) / 10 / 2;
+        const numSegments = state.linkDirectionalParticleResolution;
+        const particleGeometry = new three.SphereBufferGeometry(photonR, numSegments, numSegments);
+
+        const linkColorAccessor = accessorFn(state.linkColor);
+        const particleColorAccessor = accessorFn(state.linkDirectionalParticleColor);
+        const photonColor = particleColorAccessor(link) || linkColorAccessor(link) || '#f0f0f0';
+        const materialColor = new three.Color(colorStr2Hex(photonColor));
+        const opacity = state.linkOpacity * 3;
+        const particleMaterial = new three.MeshLambertMaterial({
+          color: materialColor,
+          transparent: true,
+          opacity
+        });
+
+        // add a single hop particle
+        link.__singleHopPhotonsObj.add(new three.Mesh(particleGeometry, particleMaterial));
+      }
+
+      return this;
     }
   },
 
