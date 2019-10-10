@@ -229,8 +229,8 @@ export default Kapsule({
         const linkCurveRotationAccessor = accessorFn(state.linkCurveRotation);
         const linkThreeObjectExtendAccessor = accessorFn(state.linkThreeObjectExtend);
         state.graphData.links.forEach(link => {
-          const line = link.__lineObj;
-          if (!line) return;
+          const lineObj = link.__lineObj;
+          if (!lineObj) return;
 
           const pos = isD3Sim
             ? link
@@ -244,7 +244,7 @@ export default Kapsule({
 
           const extendedObj = linkThreeObjectExtendAccessor(link);
           if (state.linkPositionUpdate && state.linkPositionUpdate(
-              extendedObj ? line.children[0] : line, // pass child custom object if extending the default
+              extendedObj ? lineObj.children[1] : lineObj, // pass child custom object if extending the default
               { start: { x: start.x, y: start.y, z: start.z }, end: { x: end.x, y: end.y, z: end.z } },
               link)
           && !extendedObj) {
@@ -254,6 +254,9 @@ export default Kapsule({
 
           const curveResolution = 30; // # line segments
           const curve = link.__curve;
+
+          // select default line obj if it's an extended group
+          const line = lineObj.children.length ? lineObj.children[0] : lineObj;
 
           if (line.type === 'Line') { // Update line geometry
             if (!curve) { // straight line
@@ -713,25 +716,34 @@ export default Kapsule({
               customObj = customObj.clone();
             }
 
-            let obj;
-
-            if (customObj && !extendObj) {
-              obj = customObj;
-              bypassUpdObjs.add(obj);
-            } else { // Add default line object
+            let defaultObj;
+            if (!customObj || extendObj) {
+              // construct default line obj
               const useCylinder = !!widthAccessor(link);
 
               if (useCylinder) {
-                obj = new three.Mesh();
+                defaultObj = new three.Mesh();
               } else { // Use plain line (constant width)
                 const lineGeometry = new three.BufferGeometry();
                 lineGeometry.addAttribute('position', new three.BufferAttribute(new Float32Array(2 * 3), 3));
 
-                obj = new three.Line(lineGeometry);
+                defaultObj = new three.Line(lineGeometry);
               }
+            }
 
-              if (customObj && extendObj) {
-                obj.add(customObj); // extend default with custom
+            let obj;
+            if (!customObj) {
+              obj = defaultObj;
+            } else {
+              if (!extendObj) {
+                // use custom object
+                obj = customObj;
+                bypassUpdObjs.add(obj);
+              } else {
+                // extend default with custom in a group
+                obj = new three.Group();
+                obj.add(defaultObj);
+                obj.add(customObj);
               }
             }
 
@@ -741,8 +753,11 @@ export default Kapsule({
 
             return obj;
           },
-          updateObj: (obj, link) => {
-            if (!bypassUpdObjs.has(obj)) {
+          updateObj: (updObj, link) => {
+            if (!bypassUpdObjs.has(updObj)) {
+              // select default object if it's an extended group
+              const obj = updObj.children.length ? updObj.children[0] : updObj;
+
               const linkWidth = Math.ceil(widthAccessor(link) * 10) / 10;
 
               const useCylinder = !!linkWidth;
