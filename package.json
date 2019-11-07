@@ -42,28 +42,28 @@
   "dependencies": {
     "accessor-fn": "^1.2.2",
     "d3-force-3d": "^2.0.3",
-    "d3-scale": "^3.1.0",
+    "d3-scale": "^3.2.0",
     "d3-scale-chromatic": "^1.5.0",
     "data-joint": "^1.2.1",
     "kapsule": "^1.12.1",
     "ngraph.forcelayout": "^1.0.0",
-    "ngraph.forcelayout3d": "^0.0.16",
-    "ngraph.graph": "^18.0.0",
+    "ngraph.forcelayout3d": "^1.0.0",
+    "ngraph.graph": "^18.0.3",
     "tinycolor2": "^1.4.1"
   },
   "peerDependencies": {
     "three": "*"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.2",
-    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/core": "^7.7.2",
+    "@babel/plugin-proposal-class-properties": "^7.7.0",
     "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
-    "@babel/preset-env": "^7.6.2",
+    "@babel/preset-env": "^7.7.1",
     "rimraf": "^3.0.0",
-    "rollup": "^1.21.4",
+    "rollup": "^1.26.3",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "terser": "^4.3.1"
+    "terser": "^4.3.9"
   }
 }
