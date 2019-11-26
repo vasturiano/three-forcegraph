@@ -63,6 +63,9 @@ import getDagDepths from './utils/dagDepths';
 
 const DAG_LEVEL_NODE_RATIO = 2;
 
+// support both modes for backwards threejs compatibility
+const setAttributeFn = new three.BufferGeometry().setAttribute ? 'setAttribute' : 'addAttribute';
+
 export default Kapsule({
 
   props: {
@@ -262,7 +265,7 @@ export default Kapsule({
             if (!curve) { // straight line
               let linePos = line.geometry.getAttribute('position');
               if (!linePos || !linePos.array || linePos.array.length !== 6) {
-                line.geometry.setAttribute('position', linePos = new three.BufferAttribute(new Float32Array(2 * 3), 3));
+                line.geometry[setAttributeFn]('position', linePos = new three.BufferAttribute(new Float32Array(2 * 3), 3));
               }
 
               linePos.array[0] = start.x;
@@ -725,7 +728,7 @@ export default Kapsule({
                 defaultObj = new three.Mesh();
               } else { // Use plain line (constant width)
                 const lineGeometry = new three.BufferGeometry();
-                lineGeometry.setAttribute('position', new three.BufferAttribute(new Float32Array(2 * 3), 3));
+                lineGeometry[setAttributeFn]('position', new three.BufferAttribute(new Float32Array(2 * 3), 3));
 
                 defaultObj = new three.Line(lineGeometry);
               }
