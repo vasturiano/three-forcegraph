@@ -241,7 +241,7 @@ export default Kapsule({
           const start = pos[isD3Sim ? 'source' : 'from'];
           const end = pos[isD3Sim ? 'target' : 'to'];
 
-          if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
+          if (!start || !end || !start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
           calcLinkCurve(link); // calculate link curve for all links, including custom replaced, so it can be used in directional functionality
 
@@ -337,7 +337,7 @@ export default Kapsule({
           const start = pos[isD3Sim ? 'source' : 'from'];
           const end = pos[isD3Sim ? 'target' : 'to'];
 
-          if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
+          if (!start || !end || !start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
           const curvature = linkCurvatureAccessor(link);
 
@@ -401,7 +401,7 @@ export default Kapsule({
           const start = pos[isD3Sim ? 'source' : 'from'];
           const end = pos[isD3Sim ? 'target' : 'to'];
 
-          if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
+          if (!start || !end || !start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
           const startR = Math.sqrt(Math.max(0, nodeValAccessor(start) || 1)) * state.nodeRelSize;
           const endR = Math.sqrt(Math.max(0, nodeValAccessor(end) || 1)) * state.nodeRelSize;
@@ -453,7 +453,7 @@ export default Kapsule({
           const start = pos[isD3Sim ? 'source' : 'from'];
           const end = pos[isD3Sim ? 'target' : 'to'];
 
-          if (!start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
+          if (!start || !end || !start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
           const particleSpeed = particleSpeedAccessor(link);
 
