@@ -43,11 +43,11 @@
   },
   "dependencies": {
     "accessor-fn": "^1.2.2",
-    "d3-force-3d": "^2.0.3",
+    "d3-force-3d": "^2.1.0",
     "d3-scale": "^3.2.1",
     "d3-scale-chromatic": "^1.5.0",
     "data-joint": "^1.2.1",
-    "kapsule": "^1.12.1",
+    "kapsule": "^1.12.2",
     "ngraph.forcelayout": "^1.0.0",
     "ngraph.forcelayout3d": "^1.0.0",
     "ngraph.graph": "^19.0.3",
@@ -61,12 +61,12 @@
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-proposal-object-rest-spread": "^7.8.3",
     "@babel/preset-env": "^7.8.7",
-    "@types/three": ">=0.72.0",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "@types/three": ">=0.103.2",
     "rimraf": "^3.0.2",
-    "rollup": "^1.32.0",
-    "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup": "^2.0.6",
+    "rollup-plugin-babel": "^4.4.0",
     "terser": "^4.6.6"
   }
 }
