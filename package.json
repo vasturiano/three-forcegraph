@@ -5,7 +5,7 @@
   "unpkg": "dist/three-forcegraph.min.js",
   "main": "dist/three-forcegraph.common.js",
   "module": "dist/three-forcegraph.module.js",
-  "types": "src/three-forcegraph.d.ts",
+  "types": "dist/three-forcegraph.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/vasturiano/three-forcegraph.git"
