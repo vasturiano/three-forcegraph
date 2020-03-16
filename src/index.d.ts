@@ -40,7 +40,7 @@ type Coords = { x: number; y: number; z: number; }
 
 type LinkPositionUpdateFn = (obj: Object3D, coords: { start: Coords, end: Coords }, link: LinkObject) => null | boolean;
 
-export class ThreeForceGraphGeneric<ChainableInstance> extends Object3D {
+export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D {
   constructor();
 
   // Data input
