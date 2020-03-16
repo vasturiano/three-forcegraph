@@ -42,11 +42,11 @@
     "prepare": "npm run build && npm run minify && npm run build-module"
   },
   "dependencies": {
-    "accessor-fn": "^1.2.2",
+    "accessor-fn": "^1.2.3",
     "d3-force-3d": "^2.1.0",
     "d3-scale": "^3.2.1",
     "d3-scale-chromatic": "^1.5.0",
-    "data-joint": "^1.2.1",
+    "data-joint": "^1.2.2",
     "kapsule": "^1.12.2",
     "ngraph.forcelayout": "^1.0.0",
     "ngraph.forcelayout3d": "^1.0.0",
@@ -63,7 +63,7 @@
     "@babel/preset-env": "^7.8.7",
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
-    "@types/three": ">=0.103.2",
+    "@types/three": ">=0.72.0",
     "rimraf": "^3.0.2",
     "rollup": "^2.0.6",
     "rollup-plugin-babel": "^4.4.0",

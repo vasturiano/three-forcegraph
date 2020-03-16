@@ -790,10 +790,10 @@
   dependencies:
     three "*"
 
-accessor-fn@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/accessor-fn/-/accessor-fn-1.2.2.tgz#dd52c271465388b29764ab79f2222dedd11e49b2"
-  integrity sha1-3VLCcUZTiLKXZKt58iIt7dEeSbI=
+accessor-fn@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/accessor-fn/-/accessor-fn-1.2.3.tgz#9688ff8ee166a0f8eff2c62733e6e5d2127559e9"
+  integrity sha512-lxRL35pP3IiYTXBIeO3SM62SdmXxm6Oc56BbQhNTUa/yEGHmib/SrJYO39y991vUg1jpA1WfvTBTXaB/iruMrw==
 
 ansi-styles@^3.2.1:
   version "3.2.1"
@@ -981,12 +981,12 @@ d3-timer@^1.0.10:
   resolved "https://registry.yarnpkg.com/d3-timer/-/d3-timer-1.0.10.tgz#dfe76b8a91748831b13b6d9c793ffbd508dd9de5"
   integrity sha512-B1JDm0XDaQC+uvo4DT79H0XmBskgS3l6Ve+1SBCfxgmtIb1AVrPIoqd+nPSv+loMX8szQ0sVUhGngL7D5QPiXw==
 
-data-joint@^1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/data-joint/-/data-joint-1.2.1.tgz#b624ff28bf71388c5a40cc03fdef4d27b12e6bf3"
-  integrity sha512-b+PfObWOlt+R/FHd0zADUOyQw1NNGzlTe/e5YhiWtdSF+ytMMIYO/DI2FLYmZZohlvXDdD/ECF3x68YZHi+dTQ==
+data-joint@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/data-joint/-/data-joint-1.2.2.tgz#ce60fe290155cc0a50dd90a4c78d6edff4c5357e"
+  integrity sha512-mIZJT/EsCkJ5wgeIVsSr8qBM7pQKsV3BZDTOQQcgLbGyfNQ+PMH4KpMX3/lYknHSpOV0Bn2NEOKtZsa7EFwJaw==
   dependencies:
-    index-array-by "^1.2.6"
+    index-array-by "^1.2.9"
 
 debounce@^1.2.0:
   version "1.2.0"
@@ -1079,7 +1079,7 @@ has-symbols@^1.0.0:
   resolved "https://registry.yarnpkg.com/has-symbols/-/has-symbols-1.0.1.tgz#9f5214758a44196c406d9bd76cebf81ec2dd31e8"
   integrity sha512-PLcsoqu++dmEIZB+6totNFKq/7Do+Z0u4oT0zKOJNl3lYK6vGwwu2hjHs+68OEZbTjiUE9bgOABXbP/GvrS0Kg==
 
-index-array-by@^1.2.6:
+index-array-by@^1.2.9:
   version "1.2.9"
   resolved "https://registry.yarnpkg.com/index-array-by/-/index-array-by-1.2.9.tgz#31e7b098dfc2a971216684c58f97e4f1ef3a1076"
   integrity sha512-AaaAEqXelYBp2Lj0E7f3I1mU2jt+4gKYkpmTaXZKS5wJbqdzRZ9C9lDnTITRCysKcQVOfEWlhbEz6VJ8O85vdQ==
