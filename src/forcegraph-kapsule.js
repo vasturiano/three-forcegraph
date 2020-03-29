@@ -63,8 +63,9 @@ import getDagDepths from './utils/dagDepths';
 
 const DAG_LEVEL_NODE_RATIO = 2;
 
-// support both modes for backwards threejs compatibility
+// support multiple method names for backwards threejs compatibility
 const setAttributeFn = new three.BufferGeometry().setAttribute ? 'setAttribute' : 'addAttribute';
+const applyMatrix4Fn = new three.BufferGeometry().applyMatrix4 ? 'applyMatrix4' : 'applyMatrix';
 
 export default Kapsule({
 
@@ -290,8 +291,8 @@ export default Kapsule({
                 const r = linkWidth / 2;
 
                 const geometry = new three.CylinderBufferGeometry(r, r, 1, state.linkResolution, 1, false);
-                geometry.applyMatrix(new three.Matrix4().makeTranslation(0, 1 / 2, 0));
-                geometry.applyMatrix(new three.Matrix4().makeRotationX(Math.PI / 2));
+                geometry[applyMatrix4Fn](new three.Matrix4().makeTranslation(0, 1 / 2, 0));
+                geometry[applyMatrix4Fn](new three.Matrix4().makeRotationX(Math.PI / 2));
 
                 line.geometry.dispose();
                 line.geometry = geometry;
@@ -775,8 +776,8 @@ export default Kapsule({
                 ) {
                   if (!cylinderGeometries.hasOwnProperty(linkWidth)) {
                     const geometry = new three.CylinderBufferGeometry(r, r, 1, numSegments, 1, false);
-                    geometry.applyMatrix(new three.Matrix4().makeTranslation(0, 1 / 2, 0));
-                    geometry.applyMatrix(new three.Matrix4().makeRotationX(Math.PI / 2));
+                    geometry[applyMatrix4Fn](new three.Matrix4().makeTranslation(0, 1 / 2, 0));
+                    geometry[applyMatrix4Fn](new three.Matrix4().makeRotationX(Math.PI / 2));
                     cylinderGeometries[linkWidth] = geometry;
                   }
 

@@ -783,7 +783,7 @@
   dependencies:
     "@types/node" "*"
 
-"@types/three@>=0.103.2":
+"@types/three@>=0.75.0":
   version "0.103.2"
   resolved "https://registry.yarnpkg.com/@types/three/-/three-0.103.2.tgz#f7d49130001c551941a0ded757def810579aafc4"
   integrity sha512-zhtf0Qs5wLJpIn1+VWCpzSgpKayj/GSWZ6woiuz09FW59KEDeLpnBkYz6lbblVpRmGdlnG8nd0unaASshOvcXw==
