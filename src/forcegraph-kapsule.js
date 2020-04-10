@@ -161,6 +161,7 @@ export default Kapsule({
     warmupTicks: { default: 0, triggerUpdate: false }, // how many times to tick the force engine at init before starting to render
     cooldownTicks: { default: Infinity, triggerUpdate: false },
     cooldownTime: { default: 15000, triggerUpdate: false }, // ms
+    cooldownAlpha: { default: Number.NEGATIVE_INFINITY, triggerUpdate: false },
     onLoading: { default: () => {}, triggerUpdate: false },
     onFinishLoading: { default: () => {}, triggerUpdate: false },
     onUpdate: { default: () => {}, triggerUpdate: false },
@@ -207,7 +208,7 @@ export default Kapsule({
       //
 
       function layoutTick() {
-        if (++state.cntTicks > state.cooldownTicks || (new Date()) - state.startTickTime > state.cooldownTime) {
+        if (++state.cntTicks > state.cooldownTicks || (new Date()) - state.startTickTime > state.cooldownTime || state.d3ForceLayout.alpha() < state.cooldownAlpha) {
           state.engineRunning = false; // Stop ticking graph
           state.onEngineStop();
         } else {
@@ -531,7 +532,10 @@ export default Kapsule({
       }
 
       return this;
-    }
+    },
+    alpha: function (state) {
+      return state.d3ForceLayout.alpha();
+    },
   },
 
   stateInit: () => ({
