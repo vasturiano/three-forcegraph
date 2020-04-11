@@ -155,13 +155,13 @@ export default Kapsule({
     linkDirectionalParticleColor: {},
     linkDirectionalParticleResolution: { default: 4 }, // how many slice segments in the particle sphere's circumference
     forceEngine: { default: 'd3' }, // d3 or ngraph
+    d3AlphaMin: { default: Number.NEGATIVE_INFINITY, triggerUpdate: false, onChange(alphaMin, state) { state.d3ForceLayout.alphaMin(alphaMin) }},
     d3AlphaDecay: { default: 0.0228, triggerUpdate: false, onChange(alphaDecay, state) { state.d3ForceLayout.alphaDecay(alphaDecay) }},
     d3AlphaTarget: { default: 0, triggerUpdate: false, onChange(alphaTarget, state) { state.d3ForceLayout.alphaTarget(alphaTarget) }},
     d3VelocityDecay: { default: 0.4, triggerUpdate: false, onChange(velocityDecay, state) { state.d3ForceLayout.velocityDecay(velocityDecay) } },
     warmupTicks: { default: 0, triggerUpdate: false }, // how many times to tick the force engine at init before starting to render
     cooldownTicks: { default: Infinity, triggerUpdate: false },
     cooldownTime: { default: 15000, triggerUpdate: false }, // ms
-    cooldownAlpha: { default: Number.NEGATIVE_INFINITY, triggerUpdate: false },
     onLoading: { default: () => {}, triggerUpdate: false },
     onFinishLoading: { default: () => {}, triggerUpdate: false },
     onUpdate: { default: () => {}, triggerUpdate: false },
@@ -208,7 +208,11 @@ export default Kapsule({
       //
 
       function layoutTick() {
-        if (++state.cntTicks > state.cooldownTicks || (new Date()) - state.startTickTime > state.cooldownTime || state.d3ForceLayout.alpha() < state.cooldownAlpha) {
+        if (
+          ++state.cntTicks > state.cooldownTicks ||
+          (new Date()) - state.startTickTime > state.cooldownTime ||
+          state.d3ForceLayout.alpha() < state.d3AlphaMin
+        ) {
           state.engineRunning = false; // Stop ticking graph
           state.onEngineStop();
         } else {
@@ -533,8 +537,8 @@ export default Kapsule({
 
       return this;
     },
-    alpha: function (state) {
-      return state.d3ForceLayout.alpha();
+    d3Alpha: function (state) {
+      return state.forceEngine !== 'ngraph' ? state.d3ForceLayout.alpha() : null;
     },
   },
 
@@ -1030,7 +1034,14 @@ export default Kapsule({
         layout.graph = graph; // Attach graph reference to layout
       }
 
-      for (let i = 0; i < state.warmupTicks; i++) { layout[isD3Sim ? 'tick' : 'step'](); } // Initial ticks before starting to render
+      for (
+        let i = 0;
+        i < state.warmupTicks &&
+        !(isD3Sim && (state.d3ForceLayout.alpha() < state.d3AlphaMin));
+        i++
+      ) {
+        layout[isD3Sim ? "tick" : "step"]();
+      } // Initial ticks before starting to render
 
       state.layout = layout;
       this.resetCountdown();
