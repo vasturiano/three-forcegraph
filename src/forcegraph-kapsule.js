@@ -211,7 +211,7 @@ export default Kapsule({
         if (
           ++state.cntTicks > state.cooldownTicks ||
           (new Date()) - state.startTickTime > state.cooldownTime ||
-          state.d3ForceLayout.alpha() < state.d3AlphaMin
+          (isD3Sim && state.d3AlphaMin > 0 && state.d3ForceLayout.alpha() < state.d3AlphaMin)
         ) {
           state.engineRunning = false; // Stop ticking graph
           state.onEngineStop();
@@ -536,9 +536,6 @@ export default Kapsule({
       }
 
       return this;
-    },
-    d3Alpha: function (state) {
-      return state.forceEngine !== 'ngraph' ? state.d3ForceLayout.alpha() : null;
     },
   },
 
@@ -1037,7 +1034,7 @@ export default Kapsule({
       for (
         let i = 0;
         i < state.warmupTicks &&
-        !(isD3Sim && (state.d3ForceLayout.alpha() < state.d3AlphaMin));
+        !(isD3Sim && state.d3AlphaMin > 0 && state.d3ForceLayout.alpha() < state.d3AlphaMin);
         i++
       ) {
         layout[isD3Sim ? "tick" : "step"]();
