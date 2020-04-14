@@ -129,8 +129,12 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   dagMode(mode: DagMode): ChainableInstance;
   dagLevelDistance(): number | null;
   dagLevelDistance(distance: number): ChainableInstance;
+  d3AlphaMin(): number;
+  d3AlphaMin(alphaMin: number): ChainableInstance;
   d3AlphaDecay(): number;
   d3AlphaDecay(alphaDecay: number): ChainableInstance;
+  d3AlphaTarget(): number;
+  d3AlphaTarget(alphaTarget: number): ChainableInstance;
   d3VelocityDecay(): number;
   d3VelocityDecay(velocityDecay: number): ChainableInstance;
   d3Force(forceName: 'link' | 'charge' | 'center' | string): ForceFn | undefined;
