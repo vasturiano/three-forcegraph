@@ -155,7 +155,7 @@ export default Kapsule({
     linkDirectionalParticleColor: {},
     linkDirectionalParticleResolution: { default: 4 }, // how many slice segments in the particle sphere's circumference
     forceEngine: { default: 'd3' }, // d3 or ngraph
-    d3AlphaMin: { default: Number.NEGATIVE_INFINITY, triggerUpdate: false, onChange(alphaMin, state) { state.d3ForceLayout.alphaMin(alphaMin) }},
+    d3AlphaMin: { default: 0, triggerUpdate: false, onChange(alphaMin, state) { state.d3ForceLayout.alphaMin(alphaMin) }},
     d3AlphaDecay: { default: 0.0228, triggerUpdate: false, onChange(alphaDecay, state) { state.d3ForceLayout.alphaDecay(alphaDecay) }},
     d3AlphaTarget: { default: 0, triggerUpdate: false, onChange(alphaTarget, state) { state.d3ForceLayout.alphaTarget(alphaTarget) }},
     d3VelocityDecay: { default: 0.4, triggerUpdate: false, onChange(velocityDecay, state) { state.d3ForceLayout.velocityDecay(velocityDecay) } },
@@ -536,7 +536,7 @@ export default Kapsule({
       }
 
       return this;
-    },
+    }
   },
 
   stateInit: () => ({
