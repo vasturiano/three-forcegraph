@@ -590,8 +590,6 @@ export default Kapsule({
       const sphereGeometries = {}; // indexed by node value
       const sphereMaterials = {}; // indexed by color
 
-      const bypassUpdObjs = new Set(); // keep track of custom objects to bypass update
-
       threeDigest(
         state.graphData.nodes.filter(visibilityAccessor),
         state.graphScene,
@@ -615,9 +613,9 @@ export default Kapsule({
 
             if (customObj && !extendObj) {
               obj = customObj;
-              bypassUpdObjs.add(obj);
             } else { // Add default object (sphere mesh)
               obj = new three.Mesh();
+              obj.__graphDefaultObj = true;
 
               if (customObj && extendObj) {
                 obj.add(customObj); // extend default with custom
@@ -629,7 +627,7 @@ export default Kapsule({
             return obj;
           },
           updateObj: (obj, node) => {
-            if (!bypassUpdObjs.has(obj)) {
+            if (obj.__graphDefaultObj) { // bypass internal updates for custom node objects
               const val = valAccessor(node) || 1;
               const radius = Math.cbrt(val) * state.nodeRelSize;
               const numSegments = state.nodeResolution;
@@ -701,7 +699,6 @@ export default Kapsule({
       const cylinderGeometries = {}; // indexed by link width
 
       const visibleLinks = state.graphData.links.filter(visibilityAccessor);
-      const bypassUpdObjs = new Set(); // keep track of custom objects to bypass update
 
       // lines digest cycle
       threeDigest(
@@ -743,14 +740,16 @@ export default Kapsule({
             let obj;
             if (!customObj) {
               obj = defaultObj;
+              obj.__graphDefaultObj = true;
             } else {
               if (!extendObj) {
                 // use custom object
                 obj = customObj;
-                bypassUpdObjs.add(obj);
               } else {
                 // extend default with custom in a group
                 obj = new three.Group();
+                obj.__graphDefaultObj = true;
+
                 obj.add(defaultObj);
                 obj.add(customObj);
               }
@@ -763,7 +762,7 @@ export default Kapsule({
             return obj;
           },
           updateObj: (updObj, link) => {
-            if (!bypassUpdObjs.has(updObj)) {
+            if (updObj.__graphDefaultObj) { // bypass internal updates for custom link objects
               // select default object if it's an extended group
               const obj = updObj.children.length ? updObj.children[0] : updObj;
 
