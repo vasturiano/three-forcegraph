@@ -695,8 +695,9 @@ export default Kapsule({
       const colorAccessor = accessorFn(state.linkColor);
       const widthAccessor = accessorFn(state.linkWidth);
 
-      const lineMaterials = {}; // indexed by link color
       const cylinderGeometries = {}; // indexed by link width
+      const lambertLineMaterials = {}; // for cylinder objects, indexed by link color
+      const basicLineMaterials = {}; // for line objects, indexed by link color
 
       const visibleLinks = state.graphData.links.filter(visibilityAccessor);
 
@@ -798,12 +799,14 @@ export default Kapsule({
                 const materialColor = new three.Color(colorStr2Hex(color || '#f0f0f0'));
                 const opacity = state.linkOpacity * colorAlpha(color);
 
-                if (obj.material.type !== 'MeshLambertMaterial'
+                const materialType = useCylinder ? 'MeshLambertMaterial' : 'LineBasicMaterial';
+                if (obj.material.type !== materialType
                   || !obj.material.color.equals(materialColor)
                   || obj.material.opacity !== opacity
                 ) {
+                  const lineMaterials = useCylinder ? lambertLineMaterials : basicLineMaterials;
                   if (!lineMaterials.hasOwnProperty(color)) {
-                    lineMaterials[color] = new three.MeshLambertMaterial({
+                    lineMaterials[color] = new three[materialType]({
                       color: materialColor,
                       transparent: opacity < 1,
                       opacity,
