@@ -2,7 +2,8 @@
   <style> body { margin: 0; } </style>
 
   <script src="//unpkg.com/three"></script>
-  <script src="//unpkg.com/three-trackballcontrols-web/dist/three-trackballcontrols.min.js"></script>
+  <script src="//unpkg.com/three/examples/js/controls/TrackballControls.js"></script>
+
   <script src="//unpkg.com/three-forcegraph"></script>
   <!--<script src="../../dist/three-forcegraph.js"></script>-->
 </head>
@@ -45,7 +46,7 @@
     camera.position.z = Math.cbrt(N) * 180;
 
     // Add camera controls
-    const tbControls = new TrackballControls(camera, renderer.domElement);
+    const tbControls = new THREE.TrackballControls(camera, renderer.domElement);
 
     // Kick-off renderer
     (function animate() { // IIFE
