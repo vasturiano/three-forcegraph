@@ -157,6 +157,9 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   tickFrame(): ChainableInstance;
   resetProps(): ChainableInstance;
   refresh(): ChainableInstance;
+
+  // Utilities
+  getGraphBbox(): { x: [number, number], y: [number, number], z: [number,number] };
 }
 
 declare class ThreeForceGraph extends ThreeForceGraphGeneric<ThreeForceGraph> {}

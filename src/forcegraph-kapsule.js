@@ -14,7 +14,8 @@ import {
   Line,
   LineBasicMaterial,
   QuadraticBezierCurve3,
-  CubicBezierCurve3
+  CubicBezierCurve3,
+  Box3
 } from 'three';
 
 const three = window.THREE
@@ -35,7 +36,8 @@ const three = window.THREE
     Line,
     LineBasicMaterial,
     QuadraticBezierCurve3,
-    CubicBezierCurve3
+    CubicBezierCurve3,
+    Box3
   };
 
 import {
@@ -53,6 +55,8 @@ const ngraph = { graph, forcelayout, forcelayout3d };
 
 import Kapsule from 'kapsule';
 import accessorFn from 'accessor-fn';
+
+import { min as d3Min, max as d3Max } from 'd3-array';
 
 import threeDigest from './utils/three-digest';
 import { emptyObject } from './utils/three-gc';
@@ -536,6 +540,30 @@ export default Kapsule({
       }
 
       return this;
+    },
+    getGraphBbox: function(state) {
+      if (!state.initialised) return null;
+
+      // recursively collect all nested geometries bboxes
+      const bboxes = (function getBboxes(obj) {
+        const bboxes = [];
+
+        if (obj.geometry) {
+          obj.geometry.computeBoundingBox();
+          const box = new three.Box3();
+          box.copy(obj.geometry.boundingBox).applyMatrix4(obj.matrixWorld);
+          bboxes.push(box);
+        }
+        return bboxes.concat(...(obj.children || []).map(getBboxes));
+      })(state.graphScene);
+
+      // extract global x,y,z min/max
+      return  Object.assign(...['x', 'y', 'z'].map(c => ({
+        [c]: [
+          d3Min(bboxes, bb => bb.min[c]),
+          d3Max(bboxes, bb => bb.max[c])
+        ]
+      })));
     }
   },
 
