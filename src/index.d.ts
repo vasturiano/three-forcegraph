@@ -159,7 +159,7 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   refresh(): ChainableInstance;
 
   // Utilities
-  getGraphBbox(): { x: [number, number], y: [number, number], z: [number,number] };
+  getGraphBbox(nodeFilter?: (node: NodeObject) => boolean): { x: [number, number], y: [number, number], z: [number,number] };
 }
 
 declare class ThreeForceGraph extends ThreeForceGraphGeneric<ThreeForceGraph> {}

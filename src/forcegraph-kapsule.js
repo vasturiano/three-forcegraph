@@ -541,7 +541,7 @@ export default Kapsule({
 
       return this;
     },
-    getGraphBbox: function(state) {
+    getGraphBbox: function(state, nodeFilter = () => true) {
       if (!state.initialised) return null;
 
       // recursively collect all nested geometries bboxes
@@ -554,11 +554,17 @@ export default Kapsule({
           box.copy(obj.geometry.boundingBox).applyMatrix4(obj.matrixWorld);
           bboxes.push(box);
         }
-        return bboxes.concat(...(obj.children || []).map(getBboxes));
+        return bboxes.concat(...(obj.children || [])
+          .filter(obj => !obj.hasOwnProperty('__graphObjType') ||
+            (obj.__graphObjType === 'node' && nodeFilter(obj.__data)) // exclude filtered out nodes
+          )
+          .map(getBboxes));
       })(state.graphScene);
 
+      if (!bboxes.length) return null;
+
       // extract global x,y,z min/max
-      return  Object.assign(...['x', 'y', 'z'].map(c => ({
+      return Object.assign(...['x', 'y', 'z'].map(c => ({
         [c]: [
           d3Min(bboxes, bb => bb.min[c]),
           d3Max(bboxes, bb => bb.max[c])
