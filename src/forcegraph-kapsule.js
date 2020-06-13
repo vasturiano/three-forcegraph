@@ -163,6 +163,7 @@ export default Kapsule({
     d3AlphaDecay: { default: 0.0228, triggerUpdate: false, onChange(alphaDecay, state) { state.d3ForceLayout.alphaDecay(alphaDecay) }},
     d3AlphaTarget: { default: 0, triggerUpdate: false, onChange(alphaTarget, state) { state.d3ForceLayout.alphaTarget(alphaTarget) }},
     d3VelocityDecay: { default: 0.4, triggerUpdate: false, onChange(velocityDecay, state) { state.d3ForceLayout.velocityDecay(velocityDecay) } },
+    ngraphPhysics: {},
     warmupTicks: { default: 0, triggerUpdate: false }, // how many times to tick the force engine at init before starting to render
     cooldownTicks: { default: Infinity, triggerUpdate: false },
     cooldownTime: { default: 15000, triggerUpdate: false }, // ms
@@ -1063,7 +1064,7 @@ export default Kapsule({
         const graph = ngraph.graph();
         state.graphData.nodes.forEach(node => { graph.addNode(node[state.nodeId]); });
         state.graphData.links.forEach(link => { graph.addLink(link.source, link.target); });
-        layout = ngraph['forcelayout' + (state.numDimensions === 2 ? '' : '3d')](graph);
+        layout = ngraph['forcelayout' + (state.numDimensions === 2 ? '' : '3d')](graph, state.ngraphPhysics || undefined);
         layout.graph = graph; // Attach graph reference to layout
       }
 
