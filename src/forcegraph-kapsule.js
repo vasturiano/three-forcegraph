@@ -125,6 +125,8 @@ export default Kapsule({
       !dagMode && state.forceEngine === 'd3' && (state.graphData.nodes || []).forEach(n => n.fx = n.fy = n.fz = undefined); // unfix nodes when disabling dag mode
     }},
     dagLevelDistance: {},
+    dagNodeFilter: { default: node => true },
+    onDagError: { default: undefined, triggerUpdate: false },
     nodeRelSize: { default: 4 }, // volume per val unit
     nodeId: { default: 'id' },
     nodeVal: { default: 'val' },
@@ -995,6 +997,7 @@ export default Kapsule({
       'numDimensions',
       'forceEngine',
       'dagMode',
+      'dagNodeFilter',
       'dagLevelDistance'
     ])) {
       state.engineRunning = false; // Pause simulation
@@ -1025,7 +1028,14 @@ export default Kapsule({
         }
 
         // setup dag force constraints
-        const nodeDepths = state.dagMode && getDagDepths(state.graphData, node => node[state.nodeId]);
+        const nodeDepths = state.dagMode && getDagDepths(
+          state.graphData,
+          node => node[state.nodeId],
+          {
+            nodeFilter: state.dagNodeFilter,
+            onLoopError: state.onDagError
+          }
+        );
         const maxDepth = Math.max(...Object.values(nodeDepths || []));
         const dagLevelDistance = state.dagLevelDistance || (
           state.graphData.nodes.length / (maxDepth || 1) * DAG_LEVEL_NODE_RATIO
@@ -1042,7 +1052,7 @@ export default Kapsule({
           const fyFn = getFFn(['td', 'bu'].indexOf(state.dagMode) !== -1, state.dagMode === 'td');
           const fzFn = getFFn(['zin', 'zout'].indexOf(state.dagMode) !== -1, state.dagMode === 'zout');
 
-          state.graphData.nodes.forEach(node => {
+          state.graphData.nodes.filter(state.dagNodeFilter).forEach(node => {
             node.fx = fxFn(node);
             node.fy = fyFn(node);
             node.fz = fzFn(node);
@@ -1053,10 +1063,10 @@ export default Kapsule({
         state.d3ForceLayout.force('dagRadial',
           ['radialin', 'radialout'].indexOf(state.dagMode) !== -1
             ? d3ForceRadial(node => {
-                const nodeDepth = nodeDepths[node[state.nodeId]];
+                const nodeDepth = nodeDepths[node[state.nodeId]] || -1;
                 return (state.dagMode === 'radialin' ? maxDepth - nodeDepth : nodeDepth) * dagLevelDistance;
               })
-              .strength(1)
+              .strength(node => state.dagNodeFilter(node) ? 1 : 0)
             : null
         );
       } else {
