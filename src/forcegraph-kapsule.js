@@ -126,7 +126,7 @@ export default Kapsule({
     }},
     dagLevelDistance: {},
     dagNodeFilter: { default: node => true },
-    onDagError: { default: undefined, triggerUpdate: false },
+    onDagError: { triggerUpdate: false },
     nodeRelSize: { default: 4 }, // volume per val unit
     nodeId: { default: 'id' },
     nodeVal: { default: 'val' },
@@ -1033,7 +1033,7 @@ export default Kapsule({
           node => node[state.nodeId],
           {
             nodeFilter: state.dagNodeFilter,
-            onLoopError: state.onDagError
+            onLoopError: state.onDagError || undefined
           }
         );
         const maxDepth = Math.max(...Object.values(nodeDepths || []));
