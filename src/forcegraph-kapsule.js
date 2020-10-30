@@ -50,8 +50,7 @@ import {
 
 import graph from 'ngraph.graph';
 import forcelayout from 'ngraph.forcelayout';
-import forcelayout3d from 'ngraph.forcelayout3d';
-const ngraph = { graph, forcelayout, forcelayout3d };
+const ngraph = { graph, forcelayout };
 
 import Kapsule from 'kapsule';
 import accessorFn from 'accessor-fn';
@@ -165,7 +164,15 @@ export default Kapsule({
     d3AlphaDecay: { default: 0.0228, triggerUpdate: false, onChange(alphaDecay, state) { state.d3ForceLayout.alphaDecay(alphaDecay) }},
     d3AlphaTarget: { default: 0, triggerUpdate: false, onChange(alphaTarget, state) { state.d3ForceLayout.alphaTarget(alphaTarget) }},
     d3VelocityDecay: { default: 0.4, triggerUpdate: false, onChange(velocityDecay, state) { state.d3ForceLayout.velocityDecay(velocityDecay) } },
-    ngraphPhysics: {},
+    ngraphPhysics: { default: {
+      // defaults from https://github.com/anvaka/ngraph.physics.simulator/blob/master/index.js
+      timeStep: 20,
+      gravity: -1.2,
+      theta: 0.8,
+      springLength: 30,
+      springCoefficient: 0.0008,
+      dragCoefficient: 0.02
+    }},
     warmupTicks: { default: 0, triggerUpdate: false }, // how many times to tick the force engine at init before starting to render
     cooldownTicks: { default: Infinity, triggerUpdate: false },
     cooldownTime: { default: 15000, triggerUpdate: false }, // ms
@@ -1074,7 +1081,7 @@ export default Kapsule({
         const graph = ngraph.graph();
         state.graphData.nodes.forEach(node => { graph.addNode(node[state.nodeId]); });
         state.graphData.links.forEach(link => { graph.addLink(link.source, link.target); });
-        layout = ngraph['forcelayout' + (state.numDimensions === 2 ? '' : '3d')](graph, state.ngraphPhysics || undefined);
+        layout = ngraph.forcelayout(graph, { dimensions: state.numDimensions, ...state.ngraphPhysics });
         layout.graph = graph; // Attach graph reference to layout
       }
 
