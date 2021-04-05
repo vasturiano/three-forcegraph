@@ -305,7 +305,7 @@ export default Kapsule({
           } else if (line.type === 'Mesh') { // Update cylinder geometry
 
             if (!curve) { // straight tube
-              if (line.geometry.type !== 'CylinderBufferGeometry') {
+              if (!line.geometry.type.match(/^Cylinder(Buffer)?Geometry$/)) {
                 const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
                 const r = linkWidth / 2;
 
@@ -330,7 +330,7 @@ export default Kapsule({
               line.parent.localToWorld(vEnd); // lookAt requires world coords
               line.lookAt(vEnd);
             } else { // curved tube
-              if (line.geometry.type !== 'TubeBufferGeometry') {
+              if (!line.geometry.type.match(/^Tube(Buffer)?Geometry$/)) {
                 // reset object positioning
                 line.position.set(0, 0, 0);
                 line.rotation.set(0, 0, 0);
@@ -676,7 +676,7 @@ export default Kapsule({
               const radius = Math.cbrt(val) * state.nodeRelSize;
               const numSegments = state.nodeResolution;
 
-              if (obj.geometry.type !== 'SphereBufferGeometry'
+              if (!obj.geometry.type.match(/^Sphere(Buffer)?Geometry$/)
                 || obj.geometry.parameters.radius !== radius
                 || obj.geometry.parameters.widthSegments !== numSegments
               ) {
@@ -819,7 +819,7 @@ export default Kapsule({
                 const r = linkWidth / 2;
                 const numSegments = state.linkResolution;
 
-                if (obj.geometry.type !== 'CylinderBufferGeometry'
+                if (!obj.geometry.type.match(/^Cylinder(Buffer)?Geometry$/)
                   || obj.geometry.parameters.radiusTop !== r
                   || obj.geometry.parameters.radialSegments !== numSegments
                 ) {
@@ -888,7 +888,7 @@ export default Kapsule({
               const arrowLength = arrowLengthAccessor(link);
               const numSegments = state.linkDirectionalArrowResolution;
 
-              if (obj.geometry.type !== 'ConeBufferGeometry'
+              if (!obj.geometry.type.match(/^Cone(Buffer)?Geometry$/)
                 || obj.geometry.parameters.height !== arrowLength
                 || obj.geometry.parameters.radialSegments !== numSegments
               ) {
