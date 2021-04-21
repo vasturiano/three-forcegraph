@@ -95,10 +95,6 @@ export default Kapsule({
         links: []
       },
       onChange(graphData, state) {
-        if (graphData.nodes.length || graphData.links.length) {
-          console.info('force-graph loading', graphData.nodes.length + ' nodes', graphData.links.length + ' links');
-        }
-
         state.engineRunning = false; // Pause simulation immediately
       }
     },
