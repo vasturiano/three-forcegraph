@@ -3,7 +3,7 @@ ThreeJS Force-Directed Graph
 
 [![NPM package][npm-img]][npm-url]
 [![Build Size][build-size-img]][build-size-url]
-[![Dependencies][dependencies-img]][dependencies-url]
+[![NPM Downloads][npm-downloads-img]][npm-downloads-url]
 
 <p align="center">
      <a href="http://bl.ocks.org/vasturiano/02affe306ce445e423f992faeea13521"><img width="80%" src="http://gist.github.com/vasturiano/02affe306ce445e423f992faeea13521/raw/preview.png"></a>
@@ -14,23 +14,23 @@ Uses either [d3-force-3d](https://github.com/vasturiano/d3-force-3d) or [ngraph]
 
 ## Quick start
 
-```
+```js
 import ThreeForceGraph from 'three-forcegraph';
 ```
 or
-```
-var ThreeForceGraph = require('three-forcegraph');
+```js
+const ThreeForceGraph = require('three-forcegraph');
 ```
 or even
-```
+```html
 <script src="//unpkg.com/three-forcegraph"></script>
 ```
 then
-```
-var myGraph = new ThreeForceGraph()
-    .graphData(<myData>);
+```js
+const myGraph = new ThreeForceGraph()
+  .graphData(<myData>);
 
-var myScene = new THREE.Scene();
+const myScene = new THREE.Scene();
 myScene.add(myGraph);
 
 ...
@@ -107,7 +107,7 @@ myGraph.tickFrame();
 
 ### Input JSON syntax
 
-```
+```json
 {
     "nodes": [
         {
@@ -120,14 +120,14 @@ myGraph.tickFrame();
             "name": "name2",
             "val": 10
         },
-        (...)
+        ...
     ],
     "links": [
         {
             "source": "id1",
             "target": "id2"
         },
-        (...)
+        ...
     ]
 }
 ```
@@ -136,9 +136,9 @@ myGraph.tickFrame();
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L398E7PKP47E8&currency_code=USD&source=url) If this project has helped you and you'd like to contribute back, you can always [buy me a ☕](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L398E7PKP47E8&currency_code=USD&source=url)!
 
-[npm-img]: https://img.shields.io/npm/v/three-forcegraph.svg
+[npm-img]: https://img.shields.io/npm/v/three-forcegraph
 [npm-url]: https://npmjs.org/package/three-forcegraph
-[build-size-img]: https://img.shields.io/bundlephobia/minzip/three-forcegraph.svg
+[build-size-img]: https://img.shields.io/bundlephobia/minzip/three-forcegraph
 [build-size-url]: https://bundlephobia.com/result?p=three-forcegraph
-[dependencies-img]: https://img.shields.io/david/vasturiano/three-forcegraph.svg
-[dependencies-url]: https://david-dm.org/vasturiano/three-forcegraph
+[npm-downloads-img]: https://img.shields.io/npm/dt/three-forcegraph
+[npm-downloads-url]: https://www.npmtrends.com/three-forcegraph
