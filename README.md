@@ -28,7 +28,7 @@ or even
 then
 ```js
 const myGraph = new ThreeForceGraph()
-  .graphData(<myData>);
+  .graphData(myData);
 
 const myScene = new THREE.Scene();
 myScene.add(myGraph);
