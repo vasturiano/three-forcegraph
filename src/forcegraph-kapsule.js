@@ -7,10 +7,10 @@ import {
   BufferAttribute,
   Matrix4,
   Vector3,
-  SphereBufferGeometry,
-  CylinderBufferGeometry,
-  TubeBufferGeometry,
-  ConeBufferGeometry,
+  SphereGeometry,
+  CylinderGeometry,
+  TubeGeometry,
+  ConeGeometry,
   Line,
   LineBasicMaterial,
   QuadraticBezierCurve3,
@@ -29,10 +29,10 @@ const three = window.THREE
     BufferAttribute,
     Matrix4,
     Vector3,
-    SphereBufferGeometry,
-    CylinderBufferGeometry,
-    TubeBufferGeometry,
-    ConeBufferGeometry,
+    SphereGeometry,
+    CylinderGeometry,
+    TubeGeometry,
+    ConeGeometry,
     Line,
     LineBasicMaterial,
     QuadraticBezierCurve3,
@@ -305,7 +305,7 @@ export default Kapsule({
                 const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
                 const r = linkWidth / 2;
 
-                const geometry = new three.CylinderBufferGeometry(r, r, 1, state.linkResolution, 1, false);
+                const geometry = new three.CylinderGeometry(r, r, 1, state.linkResolution, 1, false);
                 geometry[applyMatrix4Fn](new three.Matrix4().makeTranslation(0, 1 / 2, 0));
                 geometry[applyMatrix4Fn](new three.Matrix4().makeRotationX(Math.PI / 2));
 
@@ -336,7 +336,7 @@ export default Kapsule({
               const linkWidth = Math.ceil(linkWidthAccessor(link) * 10) / 10;
               const r = linkWidth / 2;
 
-              const geometry = new three.TubeBufferGeometry(curve, curveResolution, r, state.linkResolution, false);
+              const geometry = new three.TubeGeometry(curve, curveResolution, r, state.linkResolution, false);
 
               line.geometry.dispose();
               line.geometry = geometry;
@@ -528,7 +528,7 @@ export default Kapsule({
         const particleWidthAccessor = accessorFn(state.linkDirectionalParticleWidth);
         const photonR = Math.ceil(particleWidthAccessor(link) * 10) / 10 / 2;
         const numSegments = state.linkDirectionalParticleResolution;
-        const particleGeometry = new three.SphereBufferGeometry(photonR, numSegments, numSegments);
+        const particleGeometry = new three.SphereGeometry(photonR, numSegments, numSegments);
 
         const linkColorAccessor = accessorFn(state.linkColor);
         const particleColorAccessor = accessorFn(state.linkDirectionalParticleColor);
@@ -677,7 +677,7 @@ export default Kapsule({
                 || obj.geometry.parameters.widthSegments !== numSegments
               ) {
                 if (!sphereGeometries.hasOwnProperty(val)) {
-                  sphereGeometries[val] = new three.SphereBufferGeometry(radius, numSegments, numSegments);
+                  sphereGeometries[val] = new three.SphereGeometry(radius, numSegments, numSegments);
                 }
 
                 obj.geometry.dispose();
@@ -820,7 +820,7 @@ export default Kapsule({
                   || obj.geometry.parameters.radialSegments !== numSegments
                 ) {
                   if (!cylinderGeometries.hasOwnProperty(linkWidth)) {
-                    const geometry = new three.CylinderBufferGeometry(r, r, 1, numSegments, 1, false);
+                    const geometry = new three.CylinderGeometry(r, r, 1, numSegments, 1, false);
                     geometry[applyMatrix4Fn](new three.Matrix4().makeTranslation(0, 1 / 2, 0));
                     geometry[applyMatrix4Fn](new three.Matrix4().makeRotationX(Math.PI / 2));
                     cylinderGeometries[linkWidth] = geometry;
@@ -888,7 +888,7 @@ export default Kapsule({
                 || obj.geometry.parameters.height !== arrowLength
                 || obj.geometry.parameters.radialSegments !== numSegments
               ) {
-                const coneGeometry = new three.ConeBufferGeometry(arrowLength * 0.25, arrowLength, numSegments);
+                const coneGeometry = new three.ConeGeometry(arrowLength * 0.25, arrowLength, numSegments);
                 // Correct orientation
                 coneGeometry.translate(0, arrowLength / 2, 0);
                 coneGeometry.rotateX(Math.PI / 2);
@@ -940,7 +940,7 @@ export default Kapsule({
                 particleGeometry = curPhoton.geometry;
               } else {
                 if (!particleGeometries.hasOwnProperty(photonR)) {
-                  particleGeometries[photonR] = new three.SphereBufferGeometry(photonR, numSegments, numSegments);
+                  particleGeometries[photonR] = new three.SphereGeometry(photonR, numSegments, numSegments);
                 }
                 particleGeometry = particleGeometries[photonR];
 
