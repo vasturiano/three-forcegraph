@@ -516,7 +516,7 @@ export default Kapsule({
       }
     },
     emitParticle: function(state, link) {
-      if (link) {
+      if (link && state.graphData.links.includes(link)) {
         if (!link.__singleHopPhotonsObj) {
           const obj = new three.Group();
           obj.__linkThreeObjType = 'singleHopPhotons';
@@ -754,6 +754,15 @@ export default Kapsule({
             'linkWidth'
           ]),
           objFilter: obj => obj.__graphObjType === 'link',
+          exitObj: obj => {
+            // remove trailing single photons
+            const singlePhotonsObj = obj.__data && obj.__data.__singleHopPhotonsObj;
+            if (singlePhotonsObj) {
+              singlePhotonsObj.parent.remove(singlePhotonsObj);
+              emptyObject(singlePhotonsObj);
+              delete obj.__data.__singleHopPhotonsObj;
+            }
+          },
           createObj: link => {
             let customObj = customObjectAccessor(link);
             const extendObj = customObjectExtendAccessor(link);
