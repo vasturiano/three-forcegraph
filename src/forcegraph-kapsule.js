@@ -419,8 +419,8 @@ export default Kapsule({
 
           if (!start || !end || !start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
-          const startR = Math.sqrt(Math.max(0, nodeValAccessor(start) || 1)) * state.nodeRelSize;
-          const endR = Math.sqrt(Math.max(0, nodeValAccessor(end) || 1)) * state.nodeRelSize;
+          const startR = Math.cbrt(Math.max(0, nodeValAccessor(start) || 1)) * state.nodeRelSize;
+          const endR = Math.cbrt(Math.max(0, nodeValAccessor(end) || 1)) * state.nodeRelSize;
 
           const arrowLength = arrowLengthAccessor(link);
           const arrowRelPos = arrowRelPosAccessor(link);
