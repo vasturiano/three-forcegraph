@@ -237,9 +237,24 @@ export default Kapsule({
 
           const pos = isD3Sim ? node : state.layout.getNodePosition(node[state.nodeId]);
 
-          obj.position.x = pos.x;
-          obj.position.y = pos.y || 0;
-          obj.position.z = pos.z || 0;
+          if (obj.isInstancedMesh) {
+            // get matrix
+            obj.getMatrixAt(node.index, obj.matrix);
+
+            // update position of the matrix
+            obj.matrix.setPosition(pos.x, pos.y || 0, pos.z || 0);
+
+            // update instance matrix
+            obj.setMatrixAt(node.index, obj.matrix);
+
+            obj.instanceMatrix.needsUpdate = true;
+          } else {
+            obj.position.x = pos.x;
+            obj.position.y = pos.y || 0;
+            obj.position.z = pos.z || 0;
+          }
+
+
         });
 
         // Update links position
