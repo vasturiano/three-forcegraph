@@ -132,6 +132,7 @@ export default Kapsule({
     nodeVisibility: { default: true },
     nodeThreeObject: {},
     nodeThreeObjectExtend: { default: false },
+    nodePositionUpdate: { triggerUpdate: false }, // custom function to call for updating the node's position. Signature: (threeObj, { x, y, z}, node). If the function returns a truthy value, the regular node position update will not run.
     linkSource: { default: 'source' },
     linkTarget: { default: 'target' },
     linkVisibility: { default: true },
@@ -230,6 +231,8 @@ export default Kapsule({
           state.onEngineTick();
         }
 
+        const nodeThreeObjectExtendAccessor = accessorFn(state.nodeThreeObjectExtend);
+
         // Update nodes position
         state.graphData.nodes.forEach(node => {
           const obj = node.__threeObj;
@@ -237,9 +240,14 @@ export default Kapsule({
 
           const pos = isD3Sim ? node : state.layout.getNodePosition(node[state.nodeId]);
 
-          obj.position.x = pos.x;
-          obj.position.y = pos.y || 0;
-          obj.position.z = pos.z || 0;
+          const extendedObj = nodeThreeObjectExtendAccessor(node);
+          if (!state.nodePositionUpdate
+            || !state.nodePositionUpdate(extendedObj ? obj.children[0] : obj, { x: pos.x, y: pos.y, z: pos.z }, node) // pass child custom object if extending the default
+            || extendedObj) {
+            obj.position.x = pos.x;
+            obj.position.y = pos.y || 0;
+            obj.position.z = pos.z || 0;
+          }
         });
 
         // Update links position

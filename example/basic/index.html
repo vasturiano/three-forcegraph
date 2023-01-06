@@ -2,7 +2,6 @@
   <style> body { margin: 0; } </style>
 
   <script src="//unpkg.com/three"></script>
-  <script src="//unpkg.com/three/examples/js/controls/TrackballControls.js"></script>
 
   <script src="//unpkg.com/three-forcegraph"></script>
   <!--<script src="../../dist/three-forcegraph.js"></script>-->
@@ -11,7 +10,15 @@
 <body>
   <div id="3d-graph"></div>
 
-  <script>
+  <script type="importmap">{
+    "imports": {
+      "three": "https://unpkg.com/three/build/three.module.js"
+    }
+  }</script>
+  <script type="module">
+    import { TrackballControls } from '//unpkg.com/three/examples/jsm/controls/TrackballControls.js';
+    Object.assign(THREE , { TrackballControls });
+
     // Gen random data
     const N = 300;
     const gData = {
