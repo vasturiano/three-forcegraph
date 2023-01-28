@@ -39,7 +39,7 @@ interface ForceFn {
 
 type Coords = { x: number; y: number; z: number; }
 
-type LinkPositionUpdateFn = (obj: Object3D, coords: { start: Coords, end: Coords }, link: LinkObject) => null | boolean;
+type LinkPositionUpdateFn = (obj: Object3D, coords: { start: Coords, end: Coords }, link: LinkObject) => void | null | boolean;
 
 export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D {
   constructor();
