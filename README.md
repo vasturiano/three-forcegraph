@@ -20,10 +20,6 @@ See also the [standalone version](https://github.com/vasturiano/3d-force-graph).
 import ThreeForceGraph from 'three-forcegraph';
 ```
 or
-```js
-const ThreeForceGraph = require('three-forcegraph');
-```
-or even
 ```html
 <script src="//unpkg.com/three-forcegraph"></script>
 ```

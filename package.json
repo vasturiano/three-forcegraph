@@ -2,10 +2,15 @@
   "name": "three-forcegraph",
   "version": "1.40.1",
   "description": "Force-directed graph as a ThreeJS 3d object",
+  "type": "module",
   "unpkg": "dist/three-forcegraph.min.js",
-  "main": "dist/three-forcegraph.common.js",
-  "module": "dist/three-forcegraph.module.js",
+  "main": "dist/three-forcegraph.mjs",
+  "module": "dist/three-forcegraph.mjs",
   "types": "dist/three-forcegraph.d.ts",
+  "exports": {
+    "umd": "./dist/three-forcegraph.min.js",
+    "default": "./dist/three-forcegraph.mjs"
+  },
   "sideEffects": false,
   "repository": {
     "type": "git",
@@ -32,7 +37,7 @@
   },
   "scripts": {
     "build": "rimraf dist && rollup -c",
-    "dev": "rollup -w -c rollup.config.dev.mjs",
+    "dev": "rollup -w -c rollup.config.dev.js",
     "prepare": "npm run build"
   },
   "files": [
@@ -55,8 +60,6 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
-    "@babel/plugin-proposal-class-properties": "^7.18.6",
-    "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
     "@babel/preset-env": "^7.20.2",
     "@rollup/plugin-babel": "^6.0.3",
     "@rollup/plugin-commonjs": "^24.0.1",
@@ -67,5 +70,8 @@
     "rollup": "^3.12.0",
     "rollup-plugin-dts": "^5.1.1",
     "typescript": "^4.9.4"
+  },
+  "engines": {
+    "node": ">=12"
   }
 }

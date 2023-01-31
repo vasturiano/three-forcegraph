@@ -36,17 +36,12 @@ export default [
       babel({ exclude: 'node_modules/**' })
     ]
   },
-  { // commonJs and ES modules
+  { // ES module
     input: 'src/index.js',
     output: [
       {
-        format: 'cjs',
-        file: `dist/${pkg.name}.common.js`,
-        exports: 'auto'
-      },
-      {
         format: 'es',
-        file: `dist/${pkg.name}.module.js`
+        file: `dist/${pkg.name}.mjs`
       }
     ],
     external: [...Object.keys(pkg.dependencies), ...Object.keys(pkg.peerDependencies)],
