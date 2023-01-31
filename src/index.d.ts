@@ -39,6 +39,7 @@ interface ForceFn {
 
 type Coords = { x: number; y: number; z: number; }
 
+type NodePositionUpdateFn = (obj: Object3D, coords: Coords, node: NodeObject) => void | null | boolean;
 type LinkPositionUpdateFn = (obj: Object3D, coords: { start: Coords, end: Coords }, link: LinkObject) => void | null | boolean;
 
 export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D {
@@ -75,6 +76,8 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   nodeThreeObject(objAccessor: NodeAccessor<Object3D>): ChainableInstance;
   nodeThreeObjectExtend(): NodeAccessor<boolean>;
   nodeThreeObjectExtend(extendAccessor: NodeAccessor<boolean>): ChainableInstance;
+  nodePositionUpdate(): NodePositionUpdateFn | null;
+  nodePositionUpdate(updateFn: NodePositionUpdateFn): ChainableInstance;
 
   // Link styling
   linkVisibility(): LinkAccessor<boolean>;
