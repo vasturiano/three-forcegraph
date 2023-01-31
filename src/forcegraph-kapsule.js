@@ -914,8 +914,9 @@ export default Kapsule({
                 obj.geometry = coneGeometry;
               }
 
-              obj.material.color = new three.Color(arrowColorAccessor(link) || colorAccessor(link) || '#f0f0f0');
-              obj.material.opacity = state.linkOpacity * 3;
+              const arrowColor = arrowColorAccessor(link) || colorAccessor(link) || '#f0f0f0';
+              obj.material.color = new three.Color(colorStr2Hex(arrowColor));
+              obj.material.opacity = state.linkOpacity * 3 * colorAlpha(arrowColor);
             }
           }
         );
