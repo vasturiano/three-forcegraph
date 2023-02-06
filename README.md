@@ -19,7 +19,7 @@ See also the [standalone version](https://github.com/vasturiano/3d-force-graph).
 ```js
 import ThreeForceGraph from 'three-forcegraph';
 ```
-or
+or using a *script* tag
 ```html
 <script src="//unpkg.com/three-forcegraph"></script>
 ```
