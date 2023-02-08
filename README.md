@@ -6,7 +6,7 @@ ThreeJS Force-Directed Graph
 [![NPM Downloads][npm-downloads-img]][npm-downloads-url]
 
 <p align="center">
-     <a href="http://bl.ocks.org/vasturiano/02affe306ce445e423f992faeea13521"><img width="80%" src="http://gist.github.com/vasturiano/02affe306ce445e423f992faeea13521/raw/preview.png"></a>
+     <a href="https://observablehq.com/@vasturiano/3d-force-directed-graph"><img width="80%" src="https://gist.github.com/vasturiano/02affe306ce445e423f992faeea13521/raw/preview.png"></a>
 </p>
 
 A [ThreeJS](https://threejs.org/) WebGL class to represent a graph data structure in a 3-dimensional space using a force-directed iterative layout.
@@ -41,7 +41,7 @@ myGraph.tickFrame();
 
 | Method | Description | Default |
 | --- | --- | :--: |
-| <b>graphData</b>([<i>data</i>]) | Getter/setter for graph data structure (see below for syntax details). Can also be used to apply [incremental updates](https://bl.ocks.org/vasturiano/2f602ea6c51c664c29ec56cbe2d6a5f6). | `{ nodes: [], links: [] }` |
+| <b>graphData</b>([<i>data</i>]) | Getter/setter for graph data structure (see below for syntax details). Can also be used to apply [incremental updates](https://observablehq.com/@vasturiano/dynamic-3d-graph). | `{ nodes: [], links: [] }` |
 | <b>jsonUrl</b>([<i>url</i>]) | URL of JSON file to load graph data directly from, as an alternative to specifying <i>graphData</i> directly. | |
 | <b>numDimensions</b>([<i>int</i>]) | Getter/setter for number of dimensions to run the force simulation on (1, 2 or 3). | 3 |
 | <b>dagMode</b>([<i>str</i>]) | Apply layout constraints based on the graph directionality. Only works correctly for [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph) graph structures (without cycles). Choice between `td` (top-down), `bu` (bottom-up), `lr` (left-to-right), `rl` (right-to-left), `zout` (near-to-far), `zin` (far-to-near), `radialout` (outwards-radially) or `radialin` (inwards-radially). | |
