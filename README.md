@@ -101,7 +101,7 @@ myGraph.tickFrame();
 | <b>onFinishLoading</b>(<i>fn</i>) | Callback function for notification that the component has finished loading data asynchronously. | - |
 | <b>onUpdate</b>(<i>fn</i>) | Callback function for notification that the component has started updating and the simulation engine is temporarily paused. | - |
 | <b>onFinishUpdate</b>(<i>fn</i>) | Callback function for notification that the component has finished updating, done iterating through the warmup phase (if needed) and the simulation engine has been resumed. | - |
-| <b>resetCountdown()</b> | Resets the engine countdown timer to the initial value. Useful when you want to keep the engine ticking for a while after the last user interaction. | - |
+| <b>resetCountdown()</b> | Resets the engine countdown timer to the initial value. Useful when you want to keep the engine ticking for a while after the last user interaction. ||
 | <b>tickFrame()</b> | This method should be called on each cycle of the global renderer to iterate the underlying force simulation engine and update the nodes/links objects' positions. ||
 | <b>resetProps()</b> | Reset all object properties to their default value. ||
 | <b>refresh</b>() | Redraws all the nodes/links. ||
