@@ -155,6 +155,7 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   cooldownTicks(ticks: number): ChainableInstance;
   cooldownTime(): number;
   cooldownTime(milliseconds: number): ChainableInstance;
+  resetCountdown(): ChainableInstance;
 
   // Lifecycle methods
   onEngineTick(callback: () => void): ChainableInstance;
@@ -166,7 +167,6 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   tickFrame(): ChainableInstance;
   resetProps(): ChainableInstance;
   refresh(): ChainableInstance;
-  resetCountdown(): ChainableInstance;
 
   // Utilities
   getGraphBbox(nodeFilter?: (node: NodeObject) => boolean): { x: [number, number], y: [number, number], z: [number,number] };
