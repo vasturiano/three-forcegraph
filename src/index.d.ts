@@ -155,6 +155,7 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   cooldownTicks(ticks: number): ChainableInstance;
   cooldownTime(): number;
   cooldownTime(milliseconds: number): ChainableInstance;
+  resetCountdown(): ChainableInstance;
 
   // Lifecycle methods
   onEngineTick(callback: () => void): ChainableInstance;
