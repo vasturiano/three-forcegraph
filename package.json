@@ -8,7 +8,7 @@
   "module": "dist/three-forcegraph.mjs",
   "types": "dist/three-forcegraph.d.ts",
   "exports": {
-    "types": "dist/three-forcegraph.d.ts",
+    "types": "./dist/three-forcegraph.d.ts",
     "umd": "./dist/three-forcegraph.min.js",
     "default": "./dist/three-forcegraph.mjs"
   },
