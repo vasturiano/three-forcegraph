@@ -10,70 +10,71 @@ export type NodeObject = object & {
    *  Node id
    */
   id?: string | number;
+
   /**
-   * the node’s zero-based index into nodes
+   * The node’s zero-based index into *nodes*
    */
   index?: number;
+
   /**
-   * the node’s current x-position.
-   * The position ⟨x[,y[,z]]⟩ may be subsequently modified by forces and by the simulation. 
-   * If either applicable x, y or z is NaN, the 2D position is initialized in a phyllotaxis arrangement, 
+   * The node’s current *x*-position.
+   * This value may be subsequently modified by forces and by the simulation.
+   * If it is *NaN*, the position is initialized in a 3D [phyllotaxis arrangement](https://observablehq.com/@d3/force-layout-phyllotaxis) arrangement,
    * so chosen to ensure a deterministic, uniform distribution around the origin.
    */
   x?: number;
   /**
-   * the node’s current y-position.
-   * The position ⟨x[,y[,z]]⟩ may be subsequently modified by forces and by the simulation. 
-   * If either applicable x, y or z is NaN, the 2D position is initialized in a phyllotaxis arrangement, 
+   * The node’s current *y*-position.
+   * This value may be subsequently modified by forces and by the simulation.
+   * If it is *NaN*, the position is initialized in a 3D [phyllotaxis arrangement](https://observablehq.com/@d3/force-layout-phyllotaxis) arrangement,
    * so chosen to ensure a deterministic, uniform distribution around the origin.
    */
   y?: number;
   /**
-   * the node’s current z-position.
-   * The position ⟨x[,y[,z]]⟩ may be subsequently modified by forces and by the simulation. 
-   * If either applicable x, y or z is NaN, the 2D position is initialized in a phyllotaxis arrangement, 
+   * The node’s current *z*-position.
+   * This value may be subsequently modified by forces and by the simulation.
+   * If it is *NaN*, the position is initialized in a 3D [phyllotaxis arrangement](https://observablehq.com/@d3/force-layout-phyllotaxis) arrangement,
    * so chosen to ensure a deterministic, uniform distribution around the origin.
    */
   z?: number;
+
   /**
-  * The node’s current x-velocity.
-  * The velocity ⟨vx[,vy[,vz]]⟩ may be subsequently modified by forces and by the simulation. 
-  * If either applicable vx, vy or vz is NaN, the velocity is initialized to ⟨0,0,0⟩
+  * The node’s current *x*-velocity.
+  * This value may be subsequently modified by forces and by the simulation.
   * @default 0
   */
   vx?: number;
   /**
-  * The node’s current y-velocity.
-  * The velocity ⟨vx[,vy[,vz]]⟩ may be subsequently modified by forces and by the simulation. 
-  * If either applicable vx, vy or vz is NaN, the velocity is initialized to ⟨0,0,0⟩
+  * The node’s current *y*-velocity.
+  * This value may be subsequently modified by forces and by the simulation.
   * @default 0
   */
   vy?: number;
   /**
-  * The node’s current z-velocity.
-  * The velocity ⟨vx[,vy[,vz]]⟩ may be subsequently modified by forces and by the simulation. 
-  * If either applicable vx, vy or vz is NaN, the velocity is initialized to ⟨0,0,0⟩
+  * The node’s current *z*-velocity.
+  * This value may be subsequently modified by forces and by the simulation.
   * @default 0
   */
   vz?: number;
+
   /**
-   * The node’s fixed x-position.
-   * At the end of each tick, after the application of any forces, a node with a defined node.fx has node.x reset to this value and node.vx set to zero.
-   * To unfix a node that was previously fixed, set node.fx to null, or delete this property.
+   * The node’s fixed *x*-position.
+   * At the end of each tick, after the application of any forces, a node with a defined *node*.fx has *node*.x reset to this value and *node*.vx set to zero.
+   * To unfix a node that was previously fixed, set *node*.fx to null, or delete this property.
    * @default undefined
   */
   fx?: number;
   /**
-   * The node’s fixed y-position.
-   * At the end of each tick, after the application of any forces and in 2 dimensions or higher, a node with a defined node.fy has node.y reset to this value and node.vy set to zero
-   * To unfix a node that was previously fixed, set node.fy to null, or delete this property.
+   * The node’s fixed *y*-position.
+   * At the end of each tick, after the application of any forces, a node with a defined *node*.fy has *node*.y reset to this value and *node*.vy set to zero.
+   * To unfix a node that was previously fixed, set *node*.fy to null, or delete this property.
    * @default undefined
   */
   fy?: number;
   /**
-   * The node’s fixed z-position.
-   * At the end of each tick, after the application of any forces and in 3-dimensions, a node with a defined node.fz has node.z reset to this value and node.vz set to zero. 
-   * To unfix a node that was previously fixed, set node.fz to null, or delete this property.
+   * The node’s fixed *z*-position.
+   * At the end of each tick, after the application of any forces, a node with a defined *node*.fz has *node*.z reset to this value and *node*.vz set to zero.
+   * To unfix a node that was previously fixed, set *node*.fz to null, or delete this property.
    * @default undefined
   */
   fz?: number;
@@ -82,18 +83,20 @@ export type NodeObject = object & {
 export type LinkObject = object & {
   /**
    * The link’s source node.
-   * When the link force is initialized (or re-initialized, as when the nodes or links change), any link.source property which is not an object is replaced by an object reference to 
-   * the corresponding node with the given identifier.
+   * When the link force is initialized (or re-initialized, as when the nodes or links change), any *link*.source property which is *not* an object is replaced by an object reference to
+   * the corresponding *node* with the given identifier.
    */
   source?: string | number | NodeObject;
+
   /**
-   * The link’s target node
-   * When the link force is initialized (or re-initialized, as when the nodes or links change), any link.target property which is not an object is replaced by an object reference to 
-   * the corresponding node with the given identifier.
+   * The link’s target node.
+   * When the link force is initialized (or re-initialized, as when the nodes or links change), any *link*.target property which is *not* an object is replaced by an object reference to
+   * the corresponding *node* with the given identifier.
    */
   target?: string | number | NodeObject;
+
   /**
-   * the zero-based index into links
+   * The zero-based index into links
    */
   index?: number;
 };
