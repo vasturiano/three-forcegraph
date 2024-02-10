@@ -6,7 +6,7 @@ ThreeJS Force-Directed Graph
 [![NPM Downloads][npm-downloads-img]][npm-downloads-url]
 
 <p align="center">
-     <a href="https://observablehq.com/@vasturiano/3d-force-directed-graph"><img width="80%" src="https://gist.github.com/vasturiano/02affe306ce445e423f992faeea13521/raw/preview.png"></a>
+     <a href="https://observablehq.com/@vasturiano/3d-force-directed-graph"><img width="80%" src="https://vasturiano.github.io/three-forcegraph/example/preview.png"></a>
 </p>
 
 A [ThreeJS](https://threejs.org/) WebGL class to represent a graph data structure in a 3-dimensional space using a force-directed iterative layout.
