@@ -224,7 +224,7 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   d3VelocityDecay(): number;
   d3VelocityDecay(velocityDecay: number): ChainableInstance;
   d3Force(forceName: 'link' | 'charge' | 'center' | string): ForceFn | undefined;
-  d3Force(forceName: 'link' | 'charge' | 'center' | string, forceFn: ForceFn): ChainableInstance;
+  d3Force(forceName: 'link' | 'charge' | 'center' | string, forceFn: ForceFn | null): ChainableInstance;
   d3ReheatSimulation(): ChainableInstance;
   ngraphPhysics(physics: object): ChainableInstance;
   warmupTicks(): number;
