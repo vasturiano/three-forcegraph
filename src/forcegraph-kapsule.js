@@ -1063,21 +1063,19 @@ export default Kapsule({
           * (['radialin', 'radialout'].indexOf(state.dagMode) !== -1 ? 0.7 : 1)
         );
 
+        // Reset relevant f* when swapping dag modes
+        if (['lr', 'rl', 'td', 'bu', 'zin', 'zout'].includes(changedProps.dagMode)) {
+          const resetProp = ['lr', 'rl'].includes(changedProps.dagMode) ? 'fx' : ['td', 'bu'].includes(changedProps.dagMode) ? 'fy' : 'fz';
+          state.graphData.nodes.filter(state.dagNodeFilter).forEach(node => delete node[resetProp]);
+        }
+
         // Fix nodes to x,y,z for dag mode
-        if (state.dagMode) {
-          const getFFn = (fix, invert) => node => !fix
-            ? undefined
-            : (nodeDepths[node[state.nodeId]] - maxDepth / 2) * dagLevelDistance * (invert ? -1 : 1);
+        if (['lr', 'rl', 'td', 'bu', 'zin', 'zout'].includes(state.dagMode)) {
+          const invert = ['rl', 'td', 'zout'].includes(state.dagMode);
+          const fixFn = node => (nodeDepths[node[state.nodeId]] - maxDepth / 2) * dagLevelDistance * (invert ? -1 : 1);
 
-          const fxFn = getFFn(['lr', 'rl'].indexOf(state.dagMode) !== -1, state.dagMode === 'rl');
-          const fyFn = getFFn(['td', 'bu'].indexOf(state.dagMode) !== -1, state.dagMode === 'td');
-          const fzFn = getFFn(['zin', 'zout'].indexOf(state.dagMode) !== -1, state.dagMode === 'zout');
-
-          state.graphData.nodes.filter(state.dagNodeFilter).forEach(node => {
-            node.fx = fxFn(node);
-            node.fy = fyFn(node);
-            node.fz = fzFn(node);
-          });
+          const resetProp = ['lr', 'rl'].includes(state.dagMode) ? 'fx' : ['td', 'bu'].includes(state.dagMode) ? 'fy' : 'fz';
+          state.graphData.nodes.filter(state.dagNodeFilter).forEach(node => node[resetProp] = fixFn(node));
         }
 
         // Use radial force for radial dags
