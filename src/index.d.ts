@@ -1,8 +1,8 @@
 import { Object3D, Material } from 'three';
 
-export interface GraphData {
-  nodes: NodeObject[];
-  links: LinkObject[];
+export interface GraphData<N = NodeObject, L = LinkObject<N>> {
+  nodes: N[];
+  links: L[];
 }
 
 export type NodeObject = object & {
@@ -80,20 +80,20 @@ export type NodeObject = object & {
   fz?: number;
 };
 
-export type LinkObject = object & {
+export type LinkObject<N = NodeObject> = object & {
   /**
    * The link’s source node.
    * When the link force is initialized (or re-initialized, as when the nodes or links change), any *link*.source property which is *not* an object is replaced by an object reference to
    * the corresponding *node* with the given identifier.
    */
-  source?: string | number | NodeObject;
+  source?: string | number | N;
 
   /**
    * The link’s target node.
    * When the link force is initialized (or re-initialized, as when the nodes or links change), any *link*.target property which is *not* an object is replaced by an object reference to
    * the corresponding *node* with the given identifier.
    */
-  target?: string | number | NodeObject;
+  target?: string | number | N;
 
   /**
    * The zero-based index into links
@@ -102,30 +102,30 @@ export type LinkObject = object & {
 };
 
 type Accessor<In, Out> = Out | string | ((obj: In) => Out);
-type NodeAccessor<T> = Accessor<NodeObject, T>;
-type LinkAccessor<T> = Accessor<LinkObject, T>;
+type NodeAccessor<T, N> = Accessor<N, T>;
+type LinkAccessor<T, N, L> = Accessor<L, T>;
 
 type DagMode = 'td' | 'bu' | 'lr' | 'rl' | 'zout' | 'zin' | 'radialout' | 'radialin';
 
 type ForceEngine = 'd3' | 'ngraph';
 
-interface ForceFn {
+interface ForceFn<N = NodeObject> {
   (alpha: number): void;
-  initialize?: (nodes: NodeObject[], ...args: any[]) => void;
+  initialize?: (nodes: N[], ...args: any[]) => void;
   [key: string]: any;
 }
 
 type Coords = { x: number; y: number; z: number; }
 
-type NodePositionUpdateFn = (obj: Object3D, coords: Coords, node: NodeObject) => void | null | boolean;
-type LinkPositionUpdateFn = (obj: Object3D, coords: { start: Coords, end: Coords }, link: LinkObject) => void | null | boolean;
+type NodePositionUpdateFn<N> = (obj: Object3D, coords: Coords, node: N) => void | null | boolean;
+type LinkPositionUpdateFn<L> = (obj: Object3D, coords: { start: Coords, end: Coords }, link: L) => void | null | boolean;
 
-export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D {
+export declare class ThreeForceGraphGeneric<ChainableInstance, N extends NodeObject, L extends LinkObject<N>> extends Object3D {
   constructor();
 
   // Data input
-  graphData(): GraphData;
-  graphData(data: GraphData): ChainableInstance;
+  graphData(): GraphData<N, L>;
+  graphData(data: GraphData<N, L>): ChainableInstance;
   jsonUrl(): string | null;
   jsonUrl(url: string | null): ChainableInstance;
   nodeId(): string;
@@ -138,69 +138,69 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   // Node styling
   nodeRelSize(): number;
   nodeRelSize(size: number): ChainableInstance;
-  nodeVal(): NodeAccessor<number>;
-  nodeVal(valAccessor: NodeAccessor<number>): ChainableInstance;
-  nodeVisibility(): NodeAccessor<boolean>;
-  nodeVisibility(visibilityAccessor: NodeAccessor<boolean>): ChainableInstance;
-  nodeColor(): NodeAccessor<string>;
-  nodeColor(colorAccessor: NodeAccessor<string>): ChainableInstance;
-  nodeAutoColorBy(): NodeAccessor<string | null>;
-  nodeAutoColorBy(colorByAccessor: NodeAccessor<string | null>): ChainableInstance;
+  nodeVal(): NodeAccessor<number, N>;
+  nodeVal(valAccessor: NodeAccessor<number, N>): ChainableInstance;
+  nodeVisibility(): NodeAccessor<boolean, N>;
+  nodeVisibility(visibilityAccessor: NodeAccessor<boolean, N>): ChainableInstance;
+  nodeColor(): NodeAccessor<string, N>;
+  nodeColor(colorAccessor: NodeAccessor<string, N>): ChainableInstance;
+  nodeAutoColorBy(): NodeAccessor<string | null, N>;
+  nodeAutoColorBy(colorByAccessor: NodeAccessor<string | null, N>): ChainableInstance;
   nodeOpacity(): number;
   nodeOpacity(opacity: number): ChainableInstance;
   nodeResolution(): number;
   nodeResolution(resolution: number): ChainableInstance;
-  nodeThreeObject(): NodeAccessor<Object3D>;
-  nodeThreeObject(objAccessor: NodeAccessor<Object3D>): ChainableInstance;
-  nodeThreeObjectExtend(): NodeAccessor<boolean>;
-  nodeThreeObjectExtend(extendAccessor: NodeAccessor<boolean>): ChainableInstance;
-  nodePositionUpdate(): NodePositionUpdateFn | null;
-  nodePositionUpdate(updateFn: NodePositionUpdateFn): ChainableInstance;
+  nodeThreeObject(): NodeAccessor<Object3D, N>;
+  nodeThreeObject(objAccessor: NodeAccessor<Object3D, N>): ChainableInstance;
+  nodeThreeObjectExtend(): NodeAccessor<boolean, N>;
+  nodeThreeObjectExtend(extendAccessor: NodeAccessor<boolean, N>): ChainableInstance;
+  nodePositionUpdate(): NodePositionUpdateFn<N> | null;
+  nodePositionUpdate(updateFn: NodePositionUpdateFn<N>): ChainableInstance;
 
   // Link styling
-  linkVisibility(): LinkAccessor<boolean>;
-  linkVisibility(visibilityAccessor: LinkAccessor<boolean>): ChainableInstance;
-  linkColor(): LinkAccessor<string>;
-  linkColor(colorAccessor: LinkAccessor<string>): ChainableInstance;
-  linkAutoColorBy(): LinkAccessor<string | null>;
-  linkAutoColorBy(colorByAccessor: LinkAccessor<string | null>): ChainableInstance;
+  linkVisibility(): LinkAccessor<boolean, N, L>;
+  linkVisibility(visibilityAccessor: LinkAccessor<boolean, N, L>): ChainableInstance;
+  linkColor(): LinkAccessor<string, N, L>;
+  linkColor(colorAccessor: LinkAccessor<string, N, L>): ChainableInstance;
+  linkAutoColorBy(): LinkAccessor<string | null, N, L>;
+  linkAutoColorBy(colorByAccessor: LinkAccessor<string | null, N, L>): ChainableInstance;
   linkOpacity(): number;
   linkOpacity(opacity: number): ChainableInstance;
-  linkWidth(): LinkAccessor<number>;
-  linkWidth(widthAccessor: LinkAccessor<number>): ChainableInstance;
+  linkWidth(): LinkAccessor<number, N, L>;
+  linkWidth(widthAccessor: LinkAccessor<number, N, L>): ChainableInstance;
   linkResolution(): number;
   linkResolution(resolution: number): ChainableInstance;
-  linkCurvature(): LinkAccessor<number>;
-  linkCurvature(curvatureAccessor: LinkAccessor<number>): ChainableInstance;
-  linkCurveRotation(): LinkAccessor<number>;
-  linkCurveRotation(curveRotationAccessor: LinkAccessor<number>): ChainableInstance;
-  linkMaterial(): LinkAccessor<Material | boolean | null>;
-  linkMaterial(materialAccessor: LinkAccessor<Material | boolean | null>): ChainableInstance;
-  linkThreeObject(): LinkAccessor<Object3D>;
-  linkThreeObject(objAccessor: LinkAccessor<Object3D>): ChainableInstance;
-  linkThreeObjectExtend(): LinkAccessor<boolean>;
-  linkThreeObjectExtend(extendAccessor: LinkAccessor<boolean>): ChainableInstance;
-  linkPositionUpdate(): LinkPositionUpdateFn | null;
-  linkPositionUpdate(updateFn: LinkPositionUpdateFn): ChainableInstance;
-  linkDirectionalArrowLength(): LinkAccessor<number>;
-  linkDirectionalArrowLength(lengthAccessor: LinkAccessor<number>): ChainableInstance;
-  linkDirectionalArrowColor(): LinkAccessor<string>;
-  linkDirectionalArrowColor(colorAccessor: LinkAccessor<string>): ChainableInstance;
-  linkDirectionalArrowRelPos(): LinkAccessor<number>;
-  linkDirectionalArrowRelPos(fractionAccessor: LinkAccessor<number>): ChainableInstance;
+  linkCurvature(): LinkAccessor<number, N, L>;
+  linkCurvature(curvatureAccessor: LinkAccessor<number, N, L>): ChainableInstance;
+  linkCurveRotation(): LinkAccessor<number, N, L>;
+  linkCurveRotation(curveRotationAccessor: LinkAccessor<number, N, L>): ChainableInstance;
+  linkMaterial(): LinkAccessor<Material | boolean | null, N, L>;
+  linkMaterial(materialAccessor: LinkAccessor<Material | boolean | null, N, L>): ChainableInstance;
+  linkThreeObject(): LinkAccessor<Object3D, N, L>;
+  linkThreeObject(objAccessor: LinkAccessor<Object3D, N, L>): ChainableInstance;
+  linkThreeObjectExtend(): LinkAccessor<boolean, N, L>;
+  linkThreeObjectExtend(extendAccessor: LinkAccessor<boolean, N, L>): ChainableInstance;
+  linkPositionUpdate(): LinkPositionUpdateFn<L> | null;
+  linkPositionUpdate(updateFn: LinkPositionUpdateFn<L>): ChainableInstance;
+  linkDirectionalArrowLength(): LinkAccessor<number, N, L>;
+  linkDirectionalArrowLength(lengthAccessor: LinkAccessor<number, N, L>): ChainableInstance;
+  linkDirectionalArrowColor(): LinkAccessor<string, N, L>;
+  linkDirectionalArrowColor(colorAccessor: LinkAccessor<string, N, L>): ChainableInstance;
+  linkDirectionalArrowRelPos(): LinkAccessor<number, N, L>;
+  linkDirectionalArrowRelPos(fractionAccessor: LinkAccessor<number, N, L>): ChainableInstance;
   linkDirectionalArrowResolution(): number;
   linkDirectionalArrowResolution(resolution: number): ChainableInstance;
-  linkDirectionalParticles(): LinkAccessor<number>;
-  linkDirectionalParticles(numParticlesAccessor: LinkAccessor<number>): ChainableInstance;
-  linkDirectionalParticleSpeed(): LinkAccessor<number>;
-  linkDirectionalParticleSpeed(relDistancePerFrameAccessor: LinkAccessor<number>): ChainableInstance;
-  linkDirectionalParticleWidth(): LinkAccessor<number>;
-  linkDirectionalParticleWidth(widthAccessor: LinkAccessor<number>): ChainableInstance;
-  linkDirectionalParticleColor(): LinkAccessor<string>;
-  linkDirectionalParticleColor(colorAccessor: LinkAccessor<string>): ChainableInstance;
+  linkDirectionalParticles(): LinkAccessor<number, N, L>;
+  linkDirectionalParticles(numParticlesAccessor: LinkAccessor<number, N, L>): ChainableInstance;
+  linkDirectionalParticleSpeed(): LinkAccessor<number, N, L>;
+  linkDirectionalParticleSpeed(relDistancePerFrameAccessor: LinkAccessor<number, N, L>): ChainableInstance;
+  linkDirectionalParticleWidth(): LinkAccessor<number, N, L>;
+  linkDirectionalParticleWidth(widthAccessor: LinkAccessor<number, N, L>): ChainableInstance;
+  linkDirectionalParticleColor(): LinkAccessor<string, N, L>;
+  linkDirectionalParticleColor(colorAccessor: LinkAccessor<string, N, L>): ChainableInstance;
   linkDirectionalParticleResolution(): number;
   linkDirectionalParticleResolution(resolution: number): ChainableInstance;
-  emitParticle(link: LinkObject): ChainableInstance;
+  emitParticle(link: L): ChainableInstance;
 
   // Force engine configuration
   forceEngine(): ForceEngine;
@@ -211,8 +211,8 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   dagMode(mode: DagMode): ChainableInstance;
   dagLevelDistance(): number | null;
   dagLevelDistance(distance: number): ChainableInstance;
-  dagNodeFilter(): (node: NodeObject) => boolean;
-  dagNodeFilter(filterFn: (node: NodeObject) => boolean): ChainableInstance;
+  dagNodeFilter(): (node: N) => boolean;
+  dagNodeFilter(filterFn: (node: N) => boolean): ChainableInstance;
   onDagError(): (loopNodeIds: (string | number)[]) => void;
   onDagError(errorHandleFn: (loopNodeIds: (string | number)[]) => void): ChainableInstance;
   d3AlphaMin(): number;
@@ -223,8 +223,8 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   d3AlphaTarget(alphaTarget: number): ChainableInstance;
   d3VelocityDecay(): number;
   d3VelocityDecay(velocityDecay: number): ChainableInstance;
-  d3Force(forceName: 'link' | 'charge' | 'center' | string): ForceFn | undefined;
-  d3Force(forceName: 'link' | 'charge' | 'center' | string, forceFn: ForceFn | null): ChainableInstance;
+  d3Force(forceName: 'link' | 'charge' | 'center' | string): ForceFn<N> | undefined;
+  d3Force(forceName: 'link' | 'charge' | 'center' | string, forceFn: ForceFn<N> | null): ChainableInstance;
   d3ReheatSimulation(): ChainableInstance;
   ngraphPhysics(physics: object): ChainableInstance;
   warmupTicks(): number;
@@ -247,9 +247,9 @@ export declare class ThreeForceGraphGeneric<ChainableInstance> extends Object3D 
   refresh(): ChainableInstance;
 
   // Utilities
-  getGraphBbox(nodeFilter?: (node: NodeObject) => boolean): { x: [number, number], y: [number, number], z: [number,number] };
+  getGraphBbox(nodeFilter?: (node: N) => boolean): { x: [number, number], y: [number, number], z: [number,number] };
 }
 
-declare class ThreeForceGraph extends ThreeForceGraphGeneric<ThreeForceGraph> {}
+declare class ThreeForceGraph<NodeType = NodeObject, LinkType = LinkObject<N>> extends ThreeForceGraphGeneric<ThreeForceGraph<NodeType, LinkType>, NodeType, LinkType> {}
 
 export default ThreeForceGraph;
