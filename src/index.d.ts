@@ -120,7 +120,7 @@ type Coords = { x: number; y: number; z: number; }
 type NodePositionUpdateFn<N> = (obj: Object3D, coords: Coords, node: N) => void | null | boolean;
 type LinkPositionUpdateFn<L> = (obj: Object3D, coords: { start: Coords, end: Coords }, link: L) => void | null | boolean;
 
-export declare class ThreeForceGraphGeneric<ChainableInstance, N extends NodeObject, L extends LinkObject<N>> extends Object3D {
+export declare class ThreeForceGraphGeneric<ChainableInstance, N extends NodeObject = NodeObject, L extends LinkObject<N> = LinkObject<N>> extends Object3D {
   constructor();
 
   // Data input
