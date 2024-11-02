@@ -250,6 +250,6 @@ export declare class ThreeForceGraphGeneric<ChainableInstance, N extends NodeObj
   getGraphBbox(nodeFilter?: (node: N) => boolean): { x: [number, number], y: [number, number], z: [number,number] };
 }
 
-declare class ThreeForceGraph<NodeType = NodeObject, LinkType = LinkObject<N>> extends ThreeForceGraphGeneric<ThreeForceGraph<NodeType, LinkType>, NodeType, LinkType> {}
+declare class ThreeForceGraph<NodeType = NodeObject, LinkType = LinkObject<NodeType>> extends ThreeForceGraphGeneric<ThreeForceGraph<NodeType, LinkType>, NodeType, LinkType> {}
 
 export default ThreeForceGraph;
