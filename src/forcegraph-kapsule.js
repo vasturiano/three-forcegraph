@@ -302,7 +302,12 @@ export default Kapsule({
               linePos.needsUpdate = true;
 
             } else { // bezier curve line
-              line.geometry.setFromPoints(curve.getPoints(curveResolution));
+              const curvePnts = curve.getPoints(curveResolution);
+              // resize buffer if needed
+              if (line.geometry.getAttribute('position').array.length !== curvePnts.length * 3) {
+                line.geometry[setAttributeFn]('position', new three.BufferAttribute(new Float32Array(curvePnts.length * 3), 3));
+              }
+              line.geometry.setFromPoints(curvePnts);
             }
             line.geometry.computeBoundingSphere();
 
