@@ -611,7 +611,7 @@ export default Kapsule({
     const hasAnyPropChanged = propList => propList.some(p => changedProps.hasOwnProperty(p));
 
     state.engineRunning = false; // pause simulation
-    state.onUpdate();
+    (typeof state.onUpdate === "function") && state.onUpdate();
 
     if (state.nodeAutoColorBy !== null && hasAnyPropChanged(['nodeAutoColorBy', 'graphData', 'nodeColor'])) {
       // Auto add color to uncolored nodes
