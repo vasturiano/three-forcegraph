@@ -57,7 +57,7 @@ import accessorFn from 'accessor-fn';
 
 import { min as d3Min, max as d3Max } from 'd3-array';
 
-import threeDigest from './utils/three-digest';
+import ThreeDigest from './utils/three-digest';
 import { emptyObject } from './utils/three-gc';
 import { autoColorObjects, colorStr2Hex, colorAlpha } from './utils/color-utils';
 import getDagDepths from './utils/dagDepths';
@@ -234,8 +234,7 @@ export default Kapsule({
         const nodeThreeObjectExtendAccessor = accessorFn(state.nodeThreeObjectExtend);
 
         // Update nodes position
-        state.graphData.nodes.forEach(node => {
-          const obj = node.__threeObj;
+        state.nodeDataMapper.entries().forEach(([node, obj]) => {
           if (!obj) return;
 
           const pos = isD3Sim ? node : state.layout.getNodePosition(node[state.nodeId]);
@@ -255,8 +254,7 @@ export default Kapsule({
         const linkCurvatureAccessor = accessorFn(state.linkCurvature);
         const linkCurveRotationAccessor = accessorFn(state.linkCurveRotation);
         const linkThreeObjectExtendAccessor = accessorFn(state.linkThreeObjectExtend);
-        state.graphData.links.forEach(link => {
-          const lineObj = link.__lineObj;
+        state.linkDataMapper.entries().forEach(([link, lineObj]) => {
           if (!lineObj) return;
 
           const pos = isD3Sim
@@ -420,8 +418,7 @@ export default Kapsule({
         const arrowLengthAccessor = accessorFn(state.linkDirectionalArrowLength);
         const nodeValAccessor = accessorFn(state.nodeVal);
 
-        state.graphData.links.forEach(link => {
-          const arrowObj = link.__arrowObj;
+        state.arrowDataMapper.entries().forEach(([link, arrowObj]) => {
           if (!arrowObj) return;
 
           const pos = isD3Sim
@@ -471,7 +468,8 @@ export default Kapsule({
         // update link particle positions
         const particleSpeedAccessor = accessorFn(state.linkDirectionalParticleSpeed);
         state.graphData.links.forEach(link => {
-          const cyclePhotons = link.__photonsObj && link.__photonsObj.children;
+          const photonsObj = state.particlesDataMapper.getObj(link);
+          const cyclePhotons = photonsObj && photonsObj.children;
           const singleHopPhotons = link.__singleHopPhotonsObj && link.__singleHopPhotonsObj.children;
 
           if ((!singleHopPhotons || !singleHopPhotons.length) && (!cyclePhotons || !cyclePhotons.length)) return;
@@ -605,6 +603,11 @@ export default Kapsule({
   init(threeObj, state) {
     // Main three object to manipulate
     state.graphScene = threeObj;
+
+    state.nodeDataMapper = new ThreeDigest(threeObj, { objBindAttr: '__threeObj' });
+    state.linkDataMapper = new ThreeDigest(threeObj, { objBindAttr: '__lineObj' });
+    state.arrowDataMapper = new ThreeDigest(threeObj, { objBindAttr: '__arrowObj' });
+    state.particlesDataMapper = new ThreeDigest(threeObj, { objBindAttr: '__photonsObj' });
   },
 
   update(state, changedProps) {
@@ -643,83 +646,79 @@ export default Kapsule({
       const sphereGeometries = {}; // indexed by node value
       const sphereMaterials = {}; // indexed by color
 
-      threeDigest(
-        state.graphData.nodes.filter(visibilityAccessor),
-        state.graphScene,
-        {
-          purge: state._flushObjects || hasAnyPropChanged([
-            // recreate objects if any of these props have changed
-            'nodeThreeObject',
-            'nodeThreeObjectExtend'
-          ]),
-          objFilter: obj => obj.__graphObjType === 'node',
-          createObj: node => {
-            let customObj = customObjectAccessor(node);
-            const extendObj = customObjectExtendAccessor(node);
+      if (state._flushObjects || hasAnyPropChanged([
+        // recreate objects if any of these props have changed
+        'nodeThreeObject',
+        'nodeThreeObjectExtend'
+      ])) state.nodeDataMapper.clear();
 
-            if (customObj && state.nodeThreeObject === customObj) {
-              // clone object if it's a shared object among all nodes
-              customObj = customObj.clone();
-            }
+      state.nodeDataMapper
+        .onCreateObj(node => {
+          let customObj = customObjectAccessor(node);
+          const extendObj = customObjectExtendAccessor(node);
 
-            let obj;
+          if (customObj && state.nodeThreeObject === customObj) {
+            // clone object if it's a shared object among all nodes
+            customObj = customObj.clone();
+          }
 
-            if (customObj && !extendObj) {
-              obj = customObj;
-            } else { // Add default object (sphere mesh)
-              obj = new three.Mesh();
-              obj.__graphDefaultObj = true;
+          let obj;
 
-              if (customObj && extendObj) {
-                obj.add(customObj); // extend default with custom
-              }
-            }
+          if (customObj && !extendObj) {
+            obj = customObj;
+          } else { // Add default object (sphere mesh)
+            obj = new three.Mesh();
+            obj.__graphDefaultObj = true;
 
-            obj.__graphObjType = 'node'; // Add object type
-
-            return obj;
-          },
-          updateObj: (obj, node) => {
-            if (obj.__graphDefaultObj) { // bypass internal updates for custom node objects
-              const val = valAccessor(node) || 1;
-              const radius = Math.cbrt(val) * state.nodeRelSize;
-              const numSegments = state.nodeResolution;
-
-              if (!obj.geometry.type.match(/^Sphere(Buffer)?Geometry$/)
-                || obj.geometry.parameters.radius !== radius
-                || obj.geometry.parameters.widthSegments !== numSegments
-              ) {
-                if (!sphereGeometries.hasOwnProperty(val)) {
-                  sphereGeometries[val] = new three.SphereGeometry(radius, numSegments, numSegments);
-                }
-
-                obj.geometry.dispose();
-                obj.geometry = sphereGeometries[val];
-              }
-
-              const color = colorAccessor(node);
-              const materialColor = new three.Color(colorStr2Hex(color || '#ffffaa'));
-              const opacity = state.nodeOpacity * colorAlpha(color);
-
-              if (obj.material.type !== 'MeshLambertMaterial'
-                || !obj.material.color.equals(materialColor)
-                || obj.material.opacity !== opacity
-              ) {
-                if (!sphereMaterials.hasOwnProperty(color)) {
-                  sphereMaterials[color] = new three.MeshLambertMaterial({
-                    color: materialColor,
-                    transparent: true,
-                    opacity
-                  });
-                }
-
-                obj.material.dispose();
-                obj.material = sphereMaterials[color];
-              }
+            if (customObj && extendObj) {
+              obj.add(customObj); // extend default with custom
             }
           }
-        }
-      );
+
+          obj.__graphObjType = 'node'; // Add object type
+
+          return obj;
+        })
+        .onUpdateObj((obj, node) => {
+          if (obj.__graphDefaultObj) { // bypass internal updates for custom node objects
+            const val = valAccessor(node) || 1;
+            const radius = Math.cbrt(val) * state.nodeRelSize;
+            const numSegments = state.nodeResolution;
+
+            if (!obj.geometry.type.match(/^Sphere(Buffer)?Geometry$/)
+              || obj.geometry.parameters.radius !== radius
+              || obj.geometry.parameters.widthSegments !== numSegments
+            ) {
+              if (!sphereGeometries.hasOwnProperty(val)) {
+                sphereGeometries[val] = new three.SphereGeometry(radius, numSegments, numSegments);
+              }
+
+              obj.geometry.dispose();
+              obj.geometry = sphereGeometries[val];
+            }
+
+            const color = colorAccessor(node);
+            const materialColor = new three.Color(colorStr2Hex(color || '#ffffaa'));
+            const opacity = state.nodeOpacity * colorAlpha(color);
+
+            if (obj.material.type !== 'MeshLambertMaterial'
+              || !obj.material.color.equals(materialColor)
+              || obj.material.opacity !== opacity
+            ) {
+              if (!sphereMaterials.hasOwnProperty(color)) {
+                sphereMaterials[color] = new three.MeshLambertMaterial({
+                  color: materialColor,
+                  transparent: true,
+                  opacity
+                });
+              }
+
+              obj.material.dispose();
+              obj.material = sphereMaterials[color];
+            }
+          }
+        })
+        .digest(state.graphData.nodes.filter(visibilityAccessor));
     }
 
     // Digest links WebGL objects
@@ -755,176 +754,165 @@ export default Kapsule({
       const visibleLinks = state.graphData.links.filter(visibilityAccessor);
 
       // lines digest cycle
-      threeDigest(
-        visibleLinks,
-        state.graphScene,
-        {
-          objBindAttr: '__lineObj',
-          purge: state._flushObjects || hasAnyPropChanged([
-            // recreate objects if any of these props have changed
-            'linkThreeObject',
-            'linkThreeObjectExtend',
-            'linkWidth'
-          ]),
-          objFilter: obj => obj.__graphObjType === 'link',
-          exitObj: obj => {
-            // remove trailing single photons
-            const singlePhotonsObj = obj.__data && obj.__data.__singleHopPhotonsObj;
-            if (singlePhotonsObj) {
-              singlePhotonsObj.parent.remove(singlePhotonsObj);
-              emptyObject(singlePhotonsObj);
-              delete obj.__data.__singleHopPhotonsObj;
+      if (state._flushObjects || hasAnyPropChanged([
+        // recreate objects if any of these props have changed
+        'linkThreeObject',
+        'linkThreeObjectExtend',
+        'linkWidth'
+      ])) state.linkDataMapper.clear();
+
+      state.linkDataMapper
+        .onRemoveObj(obj => {
+          // remove trailing single photons
+          const singlePhotonsObj = obj.__data && obj.__data.__singleHopPhotonsObj;
+          if (singlePhotonsObj) {
+            singlePhotonsObj.parent.remove(singlePhotonsObj);
+            emptyObject(singlePhotonsObj);
+            delete obj.__data.__singleHopPhotonsObj;
+          }
+        })
+        .onCreateObj(link => {
+          let customObj = customObjectAccessor(link);
+          const extendObj = customObjectExtendAccessor(link);
+
+          if (customObj && state.linkThreeObject === customObj) {
+            // clone object if it's a shared object among all links
+            customObj = customObj.clone();
+          }
+
+          let defaultObj;
+          if (!customObj || extendObj) {
+            // construct default line obj
+            const useCylinder = !!widthAccessor(link);
+
+            if (useCylinder) {
+              defaultObj = new three.Mesh();
+            } else { // Use plain line (constant width)
+              const lineGeometry = new three.BufferGeometry();
+              lineGeometry[setAttributeFn]('position', new three.BufferAttribute(new Float32Array(2 * 3), 3));
+
+              defaultObj = new three.Line(lineGeometry);
             }
-          },
-          createObj: link => {
-            let customObj = customObjectAccessor(link);
-            const extendObj = customObjectExtendAccessor(link);
+          }
 
-            if (customObj && state.linkThreeObject === customObj) {
-              // clone object if it's a shared object among all links
-              customObj = customObj.clone();
-            }
-
-            let defaultObj;
-            if (!customObj || extendObj) {
-              // construct default line obj
-              const useCylinder = !!widthAccessor(link);
-
-              if (useCylinder) {
-                defaultObj = new three.Mesh();
-              } else { // Use plain line (constant width)
-                const lineGeometry = new three.BufferGeometry();
-                lineGeometry[setAttributeFn]('position', new three.BufferAttribute(new Float32Array(2 * 3), 3));
-
-                defaultObj = new three.Line(lineGeometry);
-              }
-            }
-
-            let obj;
-            if (!customObj) {
-              obj = defaultObj;
-              obj.__graphDefaultObj = true;
+          let obj;
+          if (!customObj) {
+            obj = defaultObj;
+            obj.__graphDefaultObj = true;
+          } else {
+            if (!extendObj) {
+              // use custom object
+              obj = customObj;
             } else {
-              if (!extendObj) {
-                // use custom object
-                obj = customObj;
-              } else {
-                // extend default with custom in a group
-                obj = new three.Group();
-                obj.__graphDefaultObj = true;
+              // extend default with custom in a group
+              obj = new three.Group();
+              obj.__graphDefaultObj = true;
 
-                obj.add(defaultObj);
-                obj.add(customObj);
+              obj.add(defaultObj);
+              obj.add(customObj);
+            }
+          }
+
+          obj.renderOrder = 10; // Prevent visual glitches of dark lines on top of nodes by rendering them last
+
+          obj.__graphObjType = 'link'; // Add object type
+
+          return obj;
+        })
+        .onUpdateObj((updObj, link) => {
+          if (updObj.__graphDefaultObj) { // bypass internal updates for custom link objects
+            // select default object if it's an extended group
+            const obj = updObj.children.length ? updObj.children[0] : updObj;
+
+            const linkWidth = Math.ceil(widthAccessor(link) * 10) / 10;
+
+            const useCylinder = !!linkWidth;
+
+            if (useCylinder) {
+              const r = linkWidth / 2;
+              const numSegments = state.linkResolution;
+
+              if (!obj.geometry.type.match(/^Cylinder(Buffer)?Geometry$/)
+                || obj.geometry.parameters.radiusTop !== r
+                || obj.geometry.parameters.radialSegments !== numSegments
+              ) {
+                if (!cylinderGeometries.hasOwnProperty(linkWidth)) {
+                  const geometry = new three.CylinderGeometry(r, r, 1, numSegments, 1, false);
+                  geometry[applyMatrix4Fn](new three.Matrix4().makeTranslation(0, 1 / 2, 0));
+                  geometry[applyMatrix4Fn](new three.Matrix4().makeRotationX(Math.PI / 2));
+                  cylinderGeometries[linkWidth] = geometry;
+                }
+
+                obj.geometry.dispose();
+                obj.geometry = cylinderGeometries[linkWidth];
               }
             }
 
-            obj.renderOrder = 10; // Prevent visual glitches of dark lines on top of nodes by rendering them last
+            const customMaterial = customMaterialAccessor(link);
+            if (customMaterial) {
+              obj.material = customMaterial;
+            } else {
+              const color = colorAccessor(link);
+              const materialColor = new three.Color(colorStr2Hex(color || '#f0f0f0'));
+              const opacity = state.linkOpacity * colorAlpha(color);
 
-            obj.__graphObjType = 'link'; // Add object type
-
-            return obj;
-          },
-          updateObj: (updObj, link) => {
-            if (updObj.__graphDefaultObj) { // bypass internal updates for custom link objects
-              // select default object if it's an extended group
-              const obj = updObj.children.length ? updObj.children[0] : updObj;
-
-              const linkWidth = Math.ceil(widthAccessor(link) * 10) / 10;
-
-              const useCylinder = !!linkWidth;
-
-              if (useCylinder) {
-                const r = linkWidth / 2;
-                const numSegments = state.linkResolution;
-
-                if (!obj.geometry.type.match(/^Cylinder(Buffer)?Geometry$/)
-                  || obj.geometry.parameters.radiusTop !== r
-                  || obj.geometry.parameters.radialSegments !== numSegments
-                ) {
-                  if (!cylinderGeometries.hasOwnProperty(linkWidth)) {
-                    const geometry = new three.CylinderGeometry(r, r, 1, numSegments, 1, false);
-                    geometry[applyMatrix4Fn](new three.Matrix4().makeTranslation(0, 1 / 2, 0));
-                    geometry[applyMatrix4Fn](new three.Matrix4().makeRotationX(Math.PI / 2));
-                    cylinderGeometries[linkWidth] = geometry;
-                  }
-
-                  obj.geometry.dispose();
-                  obj.geometry = cylinderGeometries[linkWidth];
+              const materialType = useCylinder ? 'MeshLambertMaterial' : 'LineBasicMaterial';
+              if (obj.material.type !== materialType
+                || !obj.material.color.equals(materialColor)
+                || obj.material.opacity !== opacity
+              ) {
+                const lineMaterials = useCylinder ? lambertLineMaterials : basicLineMaterials;
+                if (!lineMaterials.hasOwnProperty(color)) {
+                  lineMaterials[color] = new three[materialType]({
+                    color: materialColor,
+                    transparent: opacity < 1,
+                    opacity,
+                    depthWrite: opacity >= 1 // Prevent transparency issues
+                  });
                 }
-              }
 
-              const customMaterial = customMaterialAccessor(link);
-              if (customMaterial) {
-                obj.material = customMaterial;
-              } else {
-                const color = colorAccessor(link);
-                const materialColor = new three.Color(colorStr2Hex(color || '#f0f0f0'));
-                const opacity = state.linkOpacity * colorAlpha(color);
-
-                const materialType = useCylinder ? 'MeshLambertMaterial' : 'LineBasicMaterial';
-                if (obj.material.type !== materialType
-                  || !obj.material.color.equals(materialColor)
-                  || obj.material.opacity !== opacity
-                ) {
-                  const lineMaterials = useCylinder ? lambertLineMaterials : basicLineMaterials;
-                  if (!lineMaterials.hasOwnProperty(color)) {
-                    lineMaterials[color] = new three[materialType]({
-                      color: materialColor,
-                      transparent: opacity < 1,
-                      opacity,
-                      depthWrite: opacity >= 1 // Prevent transparency issues
-                    });
-                  }
-
-                  obj.material.dispose();
-                  obj.material = lineMaterials[color];
-                }
+                obj.material.dispose();
+                obj.material = lineMaterials[color];
               }
             }
           }
-        }
-      );
+        })
+        .digest(visibleLinks)
 
       // Arrows digest cycle
       if (state.linkDirectionalArrowLength || changedProps.hasOwnProperty('linkDirectionalArrowLength')) {
         const arrowLengthAccessor = accessorFn(state.linkDirectionalArrowLength);
         const arrowColorAccessor = accessorFn(state.linkDirectionalArrowColor);
 
-        threeDigest(
-          visibleLinks.filter(arrowLengthAccessor),
-          state.graphScene,
-          {
-            objBindAttr: '__arrowObj',
-            objFilter: obj => obj.__linkThreeObjType === 'arrow',
-            createObj: () => {
-              const obj = new three.Mesh(undefined, new three.MeshLambertMaterial({ transparent: true }));
-              obj.__linkThreeObjType = 'arrow'; // Add object type
+        state.arrowDataMapper
+          .onCreateObj(() => {
+            const obj = new three.Mesh(undefined, new three.MeshLambertMaterial({ transparent: true }));
+            obj.__linkThreeObjType = 'arrow'; // Add object type
 
-              return obj;
-            },
-            updateObj: (obj, link) => {
-              const arrowLength = arrowLengthAccessor(link);
-              const numSegments = state.linkDirectionalArrowResolution;
+            return obj;
+          })
+          .onUpdateObj((obj, link) => {
+            const arrowLength = arrowLengthAccessor(link);
+            const numSegments = state.linkDirectionalArrowResolution;
 
-              if (!obj.geometry.type.match(/^Cone(Buffer)?Geometry$/)
-                || obj.geometry.parameters.height !== arrowLength
-                || obj.geometry.parameters.radialSegments !== numSegments
-              ) {
-                const coneGeometry = new three.ConeGeometry(arrowLength * 0.25, arrowLength, numSegments);
-                // Correct orientation
-                coneGeometry.translate(0, arrowLength / 2, 0);
-                coneGeometry.rotateX(Math.PI / 2);
+            if (!obj.geometry.type.match(/^Cone(Buffer)?Geometry$/)
+              || obj.geometry.parameters.height !== arrowLength
+              || obj.geometry.parameters.radialSegments !== numSegments
+            ) {
+              const coneGeometry = new three.ConeGeometry(arrowLength * 0.25, arrowLength, numSegments);
+              // Correct orientation
+              coneGeometry.translate(0, arrowLength / 2, 0);
+              coneGeometry.rotateX(Math.PI / 2);
 
-                obj.geometry.dispose();
-                obj.geometry = coneGeometry;
-              }
-
-              const arrowColor = arrowColorAccessor(link) || colorAccessor(link) || '#f0f0f0';
-              obj.material.color = new three.Color(colorStr2Hex(arrowColor));
-              obj.material.opacity = state.linkOpacity * 3 * colorAlpha(arrowColor);
+              obj.geometry.dispose();
+              obj.geometry = coneGeometry;
             }
-          }
-        );
+
+            const arrowColor = arrowColorAccessor(link) || colorAccessor(link) || '#f0f0f0';
+            obj.material.color = new three.Color(colorStr2Hex(arrowColor));
+            obj.material.opacity = state.linkOpacity * 3 * colorAlpha(arrowColor);
+          })
+          .digest(visibleLinks.filter(arrowLengthAccessor));
       }
 
       // Photon particles digest cycle
@@ -936,79 +924,71 @@ export default Kapsule({
         const particleMaterials = {}; // indexed by link color
         const particleGeometries = {}; // indexed by particle width
 
-        threeDigest(
-          visibleLinks.filter(particlesAccessor),
-          state.graphScene,
-          {
-            objBindAttr: '__photonsObj',
-            objFilter: obj => obj.__linkThreeObjType === 'photons',
-            createObj: () => {
-              const obj = new three.Group();
-              obj.__linkThreeObjType = 'photons'; // Add object type
+        state.particlesDataMapper
+          .onCreateObj(() => {
+            const obj = new three.Group();
+            obj.__linkThreeObjType = 'photons'; // Add object type
 
-              return obj;
-            },
-            updateObj: (obj, link) => {
-              const numPhotons = Math.round(Math.abs(particlesAccessor(link)));
+            obj.__photonDataMapper = new ThreeDigest(obj);
 
-              const curPhoton = !!obj.children.length && obj.children[0];
+            return obj;
+          })
+          .onUpdateObj((obj, link) => {
+            const numPhotons = Math.round(Math.abs(particlesAccessor(link)));
 
-              const photonR = Math.ceil(particleWidthAccessor(link) * 10) / 10 / 2;
-              const numSegments = state.linkDirectionalParticleResolution;
+            const curPhoton = !!obj.children.length && obj.children[0];
 
-              let particleGeometry;
-              if (curPhoton
-                && curPhoton.geometry.parameters.radius === photonR
-                && curPhoton.geometry.parameters.widthSegments === numSegments) {
-                particleGeometry = curPhoton.geometry;
-              } else {
-                if (!particleGeometries.hasOwnProperty(photonR)) {
-                  particleGeometries[photonR] = new three.SphereGeometry(photonR, numSegments, numSegments);
-                }
-                particleGeometry = particleGeometries[photonR];
+            const photonR = Math.ceil(particleWidthAccessor(link) * 10) / 10 / 2;
+            const numSegments = state.linkDirectionalParticleResolution;
 
-                curPhoton && curPhoton.geometry.dispose();
+            let particleGeometry;
+            if (curPhoton
+              && curPhoton.geometry.parameters.radius === photonR
+              && curPhoton.geometry.parameters.widthSegments === numSegments) {
+              particleGeometry = curPhoton.geometry;
+            } else {
+              if (!particleGeometries.hasOwnProperty(photonR)) {
+                particleGeometries[photonR] = new three.SphereGeometry(photonR, numSegments, numSegments);
               }
+              particleGeometry = particleGeometries[photonR];
 
-              const photonColor = particleColorAccessor(link) || colorAccessor(link) || '#f0f0f0';
-              const materialColor = new three.Color(colorStr2Hex(photonColor));
-              const opacity = state.linkOpacity * 3;
-
-              let particleMaterial;
-              if (curPhoton
-                && curPhoton.material.color.equals(materialColor)
-                && curPhoton.material.opacity === opacity
-              ) {
-                particleMaterial = curPhoton.material;
-              } else {
-                if (!particleMaterials.hasOwnProperty(photonColor)) {
-                  particleMaterials[photonColor] = new three.MeshLambertMaterial({
-                    color: materialColor,
-                    transparent: true,
-                    opacity
-                  });
-                }
-                particleMaterial = particleMaterials[photonColor];
-
-                curPhoton && curPhoton.material.dispose();
-              }
-
-              // digest cycle for each photon
-              threeDigest(
-                [...new Array(numPhotons)].map((_, idx) => ({idx})),
-                obj,
-                {
-                  idAccessor: d => d.idx,
-                  createObj: () => new three.Mesh(particleGeometry, particleMaterial),
-                  updateObj: obj => {
-                    obj.geometry = particleGeometry;
-                    obj.material = particleMaterial;
-                  }
-                }
-              );
+              curPhoton && curPhoton.geometry.dispose();
             }
-          }
-        );
+
+            const photonColor = particleColorAccessor(link) || colorAccessor(link) || '#f0f0f0';
+            const materialColor = new three.Color(colorStr2Hex(photonColor));
+            const opacity = state.linkOpacity * 3;
+
+            let particleMaterial;
+            if (curPhoton
+              && curPhoton.material.color.equals(materialColor)
+              && curPhoton.material.opacity === opacity
+            ) {
+              particleMaterial = curPhoton.material;
+            } else {
+              if (!particleMaterials.hasOwnProperty(photonColor)) {
+                particleMaterials[photonColor] = new three.MeshLambertMaterial({
+                  color: materialColor,
+                  transparent: true,
+                  opacity
+                });
+              }
+              particleMaterial = particleMaterials[photonColor];
+
+              curPhoton && curPhoton.material.dispose();
+            }
+
+            // digest cycle for each photon
+            obj.__photonDataMapper
+              .id(d => d.idx)
+              .onCreateObj(() => new three.Mesh(particleGeometry, particleMaterial))
+              .onUpdateObj(obj => {
+                obj.geometry = particleGeometry;
+                obj.material = particleMaterial;
+              })
+              .digest([...new Array(numPhotons)].map((_, idx) => ({ idx })));
+          })
+          .digest(visibleLinks.filter(particlesAccessor));
       }
     }
 
