@@ -3,7 +3,7 @@ import commonJs from '@rollup/plugin-commonjs';
 import babel from '@rollup/plugin-babel';
 import terser from "@rollup/plugin-terser";
 import dts from 'rollup-plugin-dts';
-import pkg from './package.json' assert { type: 'json' };
+import pkg from './package.json' with { type: 'json' };
 
 const umdConf = {
   format: 'umd',
