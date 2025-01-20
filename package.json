@@ -68,9 +68,9 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@types/three": ">=0.118.3",
     "rimraf": "^6.0.1",
-    "rollup": "^4.28.1",
+    "rollup": "^4.31.0",
     "rollup-plugin-dts": "^6.1.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.3"
   },
   "engines": {
     "node": ">=12"
