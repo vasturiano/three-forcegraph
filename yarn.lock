@@ -1419,9 +1419,9 @@ json5@^2.2.3:
   integrity sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==
 
 kapsule@^1.16:
-  version "1.16.0"
-  resolved "https://registry.yarnpkg.com/kapsule/-/kapsule-1.16.0.tgz#184e3982211d0650055c9a751fa07d44b8a7b8ac"
-  integrity sha512-4f/z/Luu0cEXmagCwaFyzvfZai2HKgB4CQLwmsMUA+jlUbW94HfFSX+TWZxzWoMSO6b6aR+FD2Xd5z88VYZJTw==
+  version "1.16.2"
+  resolved "https://registry.yarnpkg.com/kapsule/-/kapsule-1.16.2.tgz#2a3b84e38c5d620c06a4f81173f8484e9aa35459"
+  integrity sha512-vZaM5ZysNCum7TPH1qfQx92N6O7JBM/y8ANVVwHH5R5QaXDprCvUAfbrjNUXyNCtJaYlTbJaw+enuAvYPIOTBw==
   dependencies:
     lodash-es "4"
 
