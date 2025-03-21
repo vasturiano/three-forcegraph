@@ -22,7 +22,7 @@ import ThreeForceGraph from 'three-forcegraph';
 ```
 or using a *script* tag
 ```html
-<script src="//unpkg.com/three-forcegraph"></script>
+<script src="//cdn.jsdelivr.net/npm/three-forcegraph"></script>
 ```
 then
 ```js
