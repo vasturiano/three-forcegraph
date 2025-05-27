@@ -14,6 +14,9 @@ Uses either [d3-force-3d](https://github.com/vasturiano/d3-force-3d) or [ngraph]
 
 See also the [standalone version](https://github.com/vasturiano/3d-force-graph), and the [react-three-fiber bindings](https://github.com/vasturiano/r3f-forcegraph).
 
+## Giving Back
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L398E7PKP47E8&currency_code=USD&source=url) If this project has helped you and you'd like to contribute back, you can always [buy me a ☕](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L398E7PKP47E8&currency_code=USD&source=url)!
 
 ## Quick start
 
@@ -134,9 +137,6 @@ myGraph.tickFrame();
 }
 ```
 
-## Giving Back
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L398E7PKP47E8&currency_code=USD&source=url) If this project has helped you and you'd like to contribute back, you can always [buy me a ☕](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=L398E7PKP47E8&currency_code=USD&source=url)!
 
 [npm-img]: https://img.shields.io/npm/v/three-forcegraph
 [npm-url]: https://npmjs.org/package/three-forcegraph
