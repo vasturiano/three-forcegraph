@@ -525,6 +525,10 @@ export default Kapsule({
             const photonPosRatio = photon.__progressRatio;
 
             const pos = getPhotonPos(photonPosRatio);
+
+            // Orient asymmetrical particles to target
+            photon.geometry.type !== 'SphereGeometry' && photon.lookAt(pos.x, pos.y, pos.z);
+
             ['x', 'y', 'z'].forEach(dim => photon.position[dim] = pos[dim]);
           });
         });
