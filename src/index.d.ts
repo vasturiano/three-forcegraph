@@ -200,6 +200,8 @@ export declare class ThreeForceGraphGeneric<ChainableInstance, N extends NodeObj
   linkDirectionalParticleColor(colorAccessor: LinkAccessor<string, N, L>): ChainableInstance;
   linkDirectionalParticleResolution(): number;
   linkDirectionalParticleResolution(resolution: number): ChainableInstance;
+  linkDirectionalParticleThreeObject(): LinkAccessor<Object3D, N, L>;
+  linkDirectionalParticleThreeObject(object: LinkAccessor<Object3D, N, L>): ChainableInstance;
   emitParticle(link: L): ChainableInstance;
 
   // Force engine configuration

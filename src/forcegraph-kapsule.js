@@ -156,6 +156,7 @@ export default Kapsule({
     linkDirectionalParticleWidth: { default: 0.5 },
     linkDirectionalParticleColor: {},
     linkDirectionalParticleResolution: { default: 4 }, // how many slice segments in the particle sphere's circumference
+    linkDirectionalParticleThreeObject: {},
     forceEngine: { default: 'd3' }, // d3 or ngraph
     d3AlphaMin: { default: 0 },
     d3AlphaDecay: { default: 0.0228, triggerUpdate: false, onChange(alphaDecay, state) { state.d3ForceLayout.alphaDecay(alphaDecay) }},
@@ -536,24 +537,34 @@ export default Kapsule({
           state.graphScene.add(obj);
         }
 
-        const particleWidthAccessor = accessorFn(state.linkDirectionalParticleWidth);
-        const photonR = Math.ceil(particleWidthAccessor(link) * 10) / 10 / 2;
-        const numSegments = state.linkDirectionalParticleResolution;
-        const particleGeometry = new three.SphereGeometry(photonR, numSegments, numSegments);
+        let particleObj = accessorFn(state.linkDirectionalParticleThreeObject)(link);
+        if (particleObj && state.linkDirectionalParticleThreeObject === particleObj) {
+          // clone object if it's a shared object among all links
+          particleObj = particleObj.clone();
+        }
 
-        const linkColorAccessor = accessorFn(state.linkColor);
-        const particleColorAccessor = accessorFn(state.linkDirectionalParticleColor);
-        const photonColor = particleColorAccessor(link) || linkColorAccessor(link) || '#f0f0f0';
-        const materialColor = new three.Color(colorStr2Hex(photonColor));
-        const opacity = state.linkOpacity * 3;
-        const particleMaterial = new three.MeshLambertMaterial({
-          color: materialColor,
-          transparent: true,
-          opacity
-        });
+        if (!particleObj) {
+          const particleWidthAccessor = accessorFn(state.linkDirectionalParticleWidth);
+          const photonR = Math.ceil(particleWidthAccessor(link) * 10) / 10 / 2;
+          const numSegments = state.linkDirectionalParticleResolution;
+          const particleGeometry = new three.SphereGeometry(photonR, numSegments, numSegments);
+
+          const linkColorAccessor = accessorFn(state.linkColor);
+          const particleColorAccessor = accessorFn(state.linkDirectionalParticleColor);
+          const photonColor = particleColorAccessor(link) || linkColorAccessor(link) || '#f0f0f0';
+          const materialColor = new three.Color(colorStr2Hex(photonColor));
+          const opacity = state.linkOpacity * 3;
+          const particleMaterial = new three.MeshLambertMaterial({
+            color: materialColor,
+            transparent: true,
+            opacity
+          });
+
+          particleObj = new three.Mesh(particleGeometry, particleMaterial);
+        }
 
         // add a single hop particle
-        link.__singleHopPhotonsObj.add(new three.Mesh(particleGeometry, particleMaterial));
+        link.__singleHopPhotonsObj.add(particleObj);
       }
 
       return this;
@@ -738,7 +749,8 @@ export default Kapsule({
       'linkDirectionalParticles',
       'linkDirectionalParticleWidth',
       'linkDirectionalParticleColor',
-      'linkDirectionalParticleResolution'
+      'linkDirectionalParticleResolution',
+      'linkDirectionalParticleThreeObject'
     ])) {
       const customObjectAccessor = accessorFn(state.linkThreeObject);
       const customObjectExtendAccessor = accessorFn(state.linkThreeObjectExtend);
@@ -920,6 +932,7 @@ export default Kapsule({
         const particlesAccessor = accessorFn(state.linkDirectionalParticles);
         const particleWidthAccessor = accessorFn(state.linkDirectionalParticleWidth);
         const particleColorAccessor = accessorFn(state.linkDirectionalParticleColor);
+        const particleObjectAccessor = accessorFn(state.linkDirectionalParticleThreeObject);
 
         const particleMaterials = {}; // indexed by link color
         const particleGeometries = {}; // indexed by particle width
@@ -934,51 +947,57 @@ export default Kapsule({
             return obj;
           })
           .onUpdateObj((obj, link) => {
-            const numPhotons = Math.round(Math.abs(particlesAccessor(link)));
-
             const curPhoton = !!obj.children.length && obj.children[0];
+            const customObj = particleObjectAccessor(link);
 
-            const photonR = Math.ceil(particleWidthAccessor(link) * 10) / 10 / 2;
-            const numSegments = state.linkDirectionalParticleResolution;
-
-            let particleGeometry;
-            if (curPhoton
-              && curPhoton.geometry.parameters.radius === photonR
-              && curPhoton.geometry.parameters.widthSegments === numSegments) {
-              particleGeometry = curPhoton.geometry;
+            let particleGeometry, particleMaterial;
+            if (customObj) {
+              particleGeometry = customObj.geometry;
+              particleMaterial = customObj.material;
             } else {
-              if (!particleGeometries.hasOwnProperty(photonR)) {
-                particleGeometries[photonR] = new three.SphereGeometry(photonR, numSegments, numSegments);
-              }
-              particleGeometry = particleGeometries[photonR];
+              const photonR = Math.ceil(particleWidthAccessor(link) * 10) / 10 / 2;
+              const numSegments = state.linkDirectionalParticleResolution;
 
-              curPhoton && curPhoton.geometry.dispose();
+              if (curPhoton
+                && curPhoton.geometry.parameters.radius === photonR
+                && curPhoton.geometry.parameters.widthSegments === numSegments) {
+                particleGeometry = curPhoton.geometry;
+              } else {
+                if (!particleGeometries.hasOwnProperty(photonR)) {
+                  particleGeometries[photonR] = new three.SphereGeometry(photonR, numSegments, numSegments);
+                }
+                particleGeometry = particleGeometries[photonR];
+              }
+
+              const photonColor = particleColorAccessor(link) || colorAccessor(link) || '#f0f0f0';
+              const materialColor = new three.Color(colorStr2Hex(photonColor));
+              const opacity = state.linkOpacity * 3;
+
+              if (curPhoton
+                && curPhoton.material.color.equals(materialColor)
+                && curPhoton.material.opacity === opacity
+              ) {
+                particleMaterial = curPhoton.material;
+              } else {
+                if (!particleMaterials.hasOwnProperty(photonColor)) {
+                  particleMaterials[photonColor] = new three.MeshLambertMaterial({
+                    color: materialColor,
+                    transparent: true,
+                    opacity
+                  });
+                }
+                particleMaterial = particleMaterials[photonColor];
+              }
             }
 
-            const photonColor = particleColorAccessor(link) || colorAccessor(link) || '#f0f0f0';
-            const materialColor = new three.Color(colorStr2Hex(photonColor));
-            const opacity = state.linkOpacity * 3;
-
-            let particleMaterial;
-            if (curPhoton
-              && curPhoton.material.color.equals(materialColor)
-              && curPhoton.material.opacity === opacity
-            ) {
-              particleMaterial = curPhoton.material;
-            } else {
-              if (!particleMaterials.hasOwnProperty(photonColor)) {
-                particleMaterials[photonColor] = new three.MeshLambertMaterial({
-                  color: materialColor,
-                  transparent: true,
-                  opacity
-                });
-              }
-              particleMaterial = particleMaterials[photonColor];
-
-              curPhoton && curPhoton.material.dispose();
+            if (curPhoton) {
+              // Dispose of previous particles
+              curPhoton.geometry !== particleGeometry && curPhoton.geometry.dispose();
+              curPhoton.material !== particleMaterial && curPhoton.material.dispose();
             }
 
             // digest cycle for each photon
+            const numPhotons = Math.round(Math.abs(particlesAccessor(link)));
             obj.__photonDataMapper
               .id(d => d.idx)
               .onCreateObj(() => new three.Mesh(particleGeometry, particleMaterial))
