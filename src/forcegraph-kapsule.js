@@ -153,6 +153,7 @@ export default Kapsule({
     linkDirectionalArrowResolution: { default: 8 }, // how many slice segments in the arrow's conic circumference
     linkDirectionalParticles: { default: 0 }, // animate photons travelling in the link direction
     linkDirectionalParticleSpeed: { default: 0.01, triggerUpdate: false }, // in link length ratio per frame
+    linkDirectionalParticleOffset: { default: 0, triggerUpdate: false }, // starting position offset along the link's length, like a pre-delay. Values between [0, 1]
     linkDirectionalParticleWidth: { default: 0.5 },
     linkDirectionalParticleColor: {},
     linkDirectionalParticleResolution: { default: 4 }, // how many slice segments in the particle sphere's circumference
@@ -468,6 +469,7 @@ export default Kapsule({
       function updatePhotons() {
         // update link particle positions
         const particleSpeedAccessor = accessorFn(state.linkDirectionalParticleSpeed);
+        const particleOffsetAccessor = accessorFn(state.linkDirectionalParticleOffset);
         state.graphData.links.forEach(link => {
           const photonsObj = state.particlesDataMapper.getObj(link);
           const cyclePhotons = photonsObj && photonsObj.children;
@@ -484,6 +486,7 @@ export default Kapsule({
           if (!start || !end || !start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
           const particleSpeed = particleSpeedAccessor(link);
+          const particleOffset = Math.abs(particleOffsetAccessor(link));
 
           const getPhotonPos = link.__curve
             ? t => link.__curve.getPoint(t) // interpolate along bezier curve
@@ -503,7 +506,7 @@ export default Kapsule({
             const singleHop = photon.parent.__linkThreeObjType === 'singleHopPhotons';
 
             if (!photon.hasOwnProperty('__progressRatio')) {
-              photon.__progressRatio = singleHop ? 0 : (idx / cyclePhotons.length);
+              photon.__progressRatio = singleHop ? 0 : ((idx + particleOffset) / cyclePhotons.length);
             }
 
             photon.__progressRatio += particleSpeed;

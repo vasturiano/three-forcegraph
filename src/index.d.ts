@@ -194,6 +194,8 @@ export declare class ThreeForceGraphGeneric<ChainableInstance, N extends NodeObj
   linkDirectionalParticles(numParticlesAccessor: LinkAccessor<number, N, L>): ChainableInstance;
   linkDirectionalParticleSpeed(): LinkAccessor<number, N, L>;
   linkDirectionalParticleSpeed(relDistancePerFrameAccessor: LinkAccessor<number, N, L>): ChainableInstance;
+  linkDirectionalParticleOffset(): LinkAccessor<number, N, L>;
+  linkDirectionalParticleOffset(relOffset: LinkAccessor<number, N, L>): ChainableInstance;
   linkDirectionalParticleWidth(): LinkAccessor<number, N, L>;
   linkDirectionalParticleWidth(widthAccessor: LinkAccessor<number, N, L>): ChainableInstance;
   linkDirectionalParticleColor(): LinkAccessor<string, N, L>;
