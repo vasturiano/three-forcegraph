@@ -1,6 +1,6 @@
 import DataBindMapper from 'data-bind-mapper';
 
-import { emptyObject } from './three-gc';
+import { deallocate } from './three-gc';
 
 class ThreeDigest extends DataBindMapper {
   constructor(scene, {
@@ -34,7 +34,7 @@ class ThreeDigest extends DataBindMapper {
       fn(obj, dId);
 
       this.scene.remove(obj);
-      emptyObject(obj);
+      deallocate(obj);
 
       delete d[this.#objBindAttr];
     });
