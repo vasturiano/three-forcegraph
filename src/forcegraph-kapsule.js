@@ -485,7 +485,7 @@ export default Kapsule({
 
           if (!start || !end || !start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
-          const particleSpeed = particleSpeedAccessor(link);
+          const particleSpeed = Math.abs(particleSpeedAccessor(link));
           const particleOffset = Math.abs(particleOffsetAccessor(link));
 
           const getPhotonPos = link.__curve
