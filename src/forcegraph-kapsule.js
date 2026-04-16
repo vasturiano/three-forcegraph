@@ -485,7 +485,7 @@ export default Kapsule({
 
           if (!start || !end || !start.hasOwnProperty('x') || !end.hasOwnProperty('x')) return; // skip invalid link
 
-          const particleSpeed = Math.abs(particleSpeedAccessor(link));
+          const particleSpeed = particleSpeedAccessor(link);
           const particleOffset = Math.abs(particleOffsetAccessor(link));
 
           const getPhotonPos = link.__curve
@@ -506,14 +506,17 @@ export default Kapsule({
             const singleHop = photon.parent.__linkThreeObjType === 'singleHopPhotons';
 
             if (!photon.hasOwnProperty('__progressRatio')) {
-              photon.__progressRatio = singleHop ? 0 : ((idx + particleOffset) / cyclePhotons.length);
+              photon.__progressRatio = singleHop
+                ? particleSpeed < 0 ? 1 : 0
+                : ((idx + particleOffset) / cyclePhotons.length);
             }
 
             photon.__progressRatio += particleSpeed;
 
-            if (photon.__progressRatio >=1) {
+            if (photon.__progressRatio >= 1 || photon.__progressRatio < 0) {
               if (!singleHop) {
                 photon.__progressRatio = photon.__progressRatio % 1;
+                (photon.__progressRatio < 0) && photon.__progressRatio++;
               } else {
                 // remove particle
                 photon.parent.remove(photon);
