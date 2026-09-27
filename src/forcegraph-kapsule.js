@@ -212,7 +212,7 @@ export default Kapsule({
     tickFrame: function(state) {
       const isD3Sim = state.forceEngine !== 'ngraph';
 
-      if (state.engineRunning) { layoutTick(); }
+      if (state.engineRunning && state.layout) { layoutTick(); }
       updateArrows();
       updatePhotons();
 
